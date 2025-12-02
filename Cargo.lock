@@ -5,6 +5,9 @@ version = 4
 [[package]]
 name = "ah-lojban"
 version = "0.1.0"
+dependencies = [
+ "stodi",
+]
 
 [[package]]
 name = "ah-sets"
