@@ -1,4 +1,4 @@
-use std::borrow::Borrow;
+use std::{borrow::Borrow, ops::Deref};
 
 use crate::lerfu::Lerfu;
 
@@ -18,17 +18,33 @@ impl TiValsiLaLojban_Vec {
 	}
 }
 
+impl Deref for TiValsiLaLojban_Vec {
+	type Target = TiValsiLaLojban_Slice;
+
+	fn deref(&self) -> &Self::Target {
+		self.as_slice()
+	}
+}
+
 impl Borrow<TiValsiLaLojban_Slice> for TiValsiLaLojban_Vec {
 	fn borrow(&self) -> &TiValsiLaLojban_Slice {
-		self.as_slice()
+		&self
 	}
 }
 
 /// [ti] Word[valsi] [la] in Lojban[lojban]
 /// # Invariants
 /// Must be morphologically a valid word.
+/// Therefore, can't be empty
 #[repr(transparent)]
 pub struct TiValsiLaLojban_Slice([Lerfu]);
+
+impl Stodi for TiValsiLaLojban_Slice {
+	fn check_stodi(&self) -> bool {
+		// todo!()
+		true
+	}
+}
 
 impl TiValsiLaLojban_Slice {
 	pub unsafe fn new_unchecked(inner: &[Lerfu]) -> &TiValsiLaLojban_Slice {
@@ -50,3 +66,20 @@ impl<'w> ToOwned for TiValsiLaLojban_Slice {
 		unsafe { TiValsiLaLojban_Vec::new_unchecked(self.as_slice().to_vec()) }
 	}
 }
+
+#[test]
+fn test_valsi_macro() {
+	// valsi!(abc);
+}
+
+#[macro_export]
+macro_rules! valsi {
+	($($letter:ident),+) => {
+		[
+			$($crate::lerfu::lerfu!($letter)),+
+		]
+	};
+}
+
+use stodi::Stodi;
+pub use valsi;
