@@ -10,6 +10,7 @@ use crate::lerfu::Lerfu;
 ///
 /// # Invariants
 /// See [TiValsiLaLojban_Slice]
+#[derive(Debug, Clone)]
 pub struct TiValsiLaLojban_Vec(Vec<Lerfu>);
 
 impl Stodi for TiValsiLaLojban_Vec {

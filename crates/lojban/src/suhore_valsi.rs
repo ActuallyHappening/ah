@@ -9,6 +9,7 @@ use stodi::Stodi;
 
 use crate::valsi::{TiValsiLaLojban_Slice, TiValsiLaLojban_Vec};
 
+#[derive(Debug, Clone)]
 pub struct SuhoreValsi_Vec(Vec<TiValsiLaLojban_Vec>);
 
 impl Stodi for SuhoreValsi_Vec {
