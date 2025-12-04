@@ -5,9 +5,25 @@ use crate::lerfu::Lerfu;
 /// Contains no spaces.
 ///
 /// # Invariants
-/// Must be morphologically a valid word.
+/// See [TiValsiLaLojban_Slice]
 pub struct TiValsiLaLojban_Vec(Vec<Lerfu>);
 
+impl Stodi for TiValsiLaLojban_Vec {
+	fn check_stodi(&self) -> bool {
+		self.as_slice().check_stodi()
+	}
+}
+
+/// Readonly methods implemented on [TiValsiLaLojban_Slice] instead
+impl Deref for TiValsiLaLojban_Vec {
+	type Target = TiValsiLaLojban_Slice;
+
+	fn deref(&self) -> &Self::Target {
+		self.as_slice()
+	}
+}
+
+/// Implementation understanding methods
 impl TiValsiLaLojban_Vec {
 	pub unsafe fn new_unchecked(inner: Vec<Lerfu>) -> Self {
 		Self(inner)
@@ -15,14 +31,6 @@ impl TiValsiLaLojban_Vec {
 
 	pub fn as_slice(&self) -> &TiValsiLaLojban_Slice {
 		unsafe { TiValsiLaLojban_Slice::new_unchecked(self.0.as_slice()) }
-	}
-}
-
-impl Deref for TiValsiLaLojban_Vec {
-	type Target = TiValsiLaLojban_Slice;
-
-	fn deref(&self) -> &Self::Target {
-		self.as_slice()
 	}
 }
 
@@ -46,14 +54,13 @@ impl Stodi for TiValsiLaLojban_Slice {
 	}
 }
 
+/// Implementation understanding methods
 impl TiValsiLaLojban_Slice {
 	pub unsafe fn new_unchecked(inner: &[Lerfu]) -> &TiValsiLaLojban_Slice {
 		// TODO: Not use transmute here
 		unsafe { std::mem::transmute(inner) }
 	}
-}
 
-impl TiValsiLaLojban_Slice {
 	pub fn as_slice(&self) -> &[Lerfu] {
 		&self.0
 	}
