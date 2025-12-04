@@ -5,3 +5,6 @@ resolver = "3"
 [workspace.dependencies]
 stodi = { path = "./crates/stodi" }
 ah-sets = { path = "./crates/sets"}
+
+[workspace.lints.rust]
+non_camel_case_types = "allow"
