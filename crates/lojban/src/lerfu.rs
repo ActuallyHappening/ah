@@ -1,10 +1,17 @@
 use stodi::Stodi;
 
+/// Full name: pa lerfu la lojban
 /// TODO LOJBAN is there an official lujvo for this already?
 ///
 /// Lojban character literal stored in memory as a UTF-8 compatible code point using [char]
 #[derive(Clone, Copy, Debug)]
 pub struct Lerfu(char);
+
+impl Tcita_ti for Lerfu {
+	fn full_abstract_tcita_ti() -> &'static SuhoreValsi_Slice<'static> {
+		todo!()
+	}
+}
 
 impl Lerfu {
 	pub const ALLOWED: [char; 26] = [
@@ -161,3 +168,5 @@ macro_rules! lerfu {
 	};
 }
 pub use lerfu;
+
+use crate::{suhore_valsi::SuhoreValsi_Slice, tcita::Tcita_ti};

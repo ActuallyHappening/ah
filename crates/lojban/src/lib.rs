@@ -1,15 +1,19 @@
 pub mod tcita {
 	//! tcita = x1 name/label/tag of x2
 
-	use crate::valsi::{TiValsiLaLojban_Slice, TiValsiLaLojban_Vec};
+	use crate::{
+		suhore_valsi::SuhoreValsi_Slice,
+		valsi::{TiValsiLaLojban_Slice, TiValsiLaLojban_Vec},
+	};
 
 	pub trait Tcita_ti {
 		/// TODO LOJBAN: *Full* name of self as an *abstraction* concept,
 		/// implying uniqueness
-		fn full_abstract_tcita_ti() -> &'static TiValsiLaLojban_Slice;
+		fn full_abstract_tcita_ti() -> &'static SuhoreValsi_Slice<'static>;
 	}
 }
 pub mod lerfu;
+pub mod suhore_valsi;
 pub mod valsi;
 // pub mod classifications {
 // 	use ah_sets::{FiniteSet, Set};
