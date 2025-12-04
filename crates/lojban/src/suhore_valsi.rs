@@ -11,15 +11,27 @@ use crate::valsi::{TiValsiLaLojban_Slice, TiValsiLaLojban_Vec};
 
 pub struct SuhoreValsi_Vec(Vec<TiValsiLaLojban_Vec>);
 
-impl SuhoreValsi_Vec {
-	pub const unsafe fn new_unchecked(inner: Vec<TiValsiLaLojban_Vec>) -> Self {
-		SuhoreValsi_Vec(inner)
+impl Stodi for SuhoreValsi_Vec {
+	fn check_stodi(&self) -> bool {
+		if self.0.len() <= 1 {
+			return false;
+		}
+		// TODO SOUNDNESS
+		true
 	}
 }
 
-impl Stodi for SuhoreValsi_Vec {
-	fn check_stodi(&self) -> bool {
-		self.0.len() >= 2
+impl SuhoreValsi_Vec {
+	pub fn new(inner: impl IntoIterator<Item = TiValsiLaLojban_Vec>) -> Option<Self> {
+		let ret = unsafe { Self::new_unchecked(inner.into_iter().collect::<Vec<_>>()) };
+		ret.check_stodi().then_some(ret)
+	}
+}
+
+/// Implementation understanding methods
+impl SuhoreValsi_Vec {
+	pub const unsafe fn new_unchecked(inner: Vec<TiValsiLaLojban_Vec>) -> Self {
+		SuhoreValsi_Vec(inner)
 	}
 }
 

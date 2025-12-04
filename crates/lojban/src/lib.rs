@@ -2,14 +2,14 @@ pub mod tcita {
 	//! tcita = x1 name/label/tag of x2
 
 	use crate::{
-		suhore_valsi::SuhoreValsi_Slice,
+		suhore_valsi::{SuhoreValsi_Slice, SuhoreValsi_Vec},
 		valsi::{TiValsiLaLojban_Slice, TiValsiLaLojban_Vec},
 	};
 
 	pub trait Tcita_ti {
 		/// TODO LOJBAN: *Full* name of self as an *abstraction* concept,
 		/// implying uniqueness
-		fn full_abstract_tcita_ti() -> &'static SuhoreValsi_Slice<'static>;
+		fn full_abstract_tcita_ti() -> SuhoreValsi_Vec;
 	}
 }
 pub mod lerfu;

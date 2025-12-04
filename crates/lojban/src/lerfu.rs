@@ -5,11 +5,21 @@ use stodi::Stodi;
 ///
 /// Lojban character literal stored in memory as a UTF-8 compatible code point using [char]
 #[derive(Clone, Copy, Debug)]
+#[repr(transparent)]
 pub struct Lerfu(char);
 
 impl Tcita_ti for Lerfu {
-	fn full_abstract_tcita_ti() -> &'static SuhoreValsi_Slice<'static> {
-		todo!()
+	fn full_abstract_tcita_ti() -> SuhoreValsi_Vec {
+		let suho_valsi = "pa lerfu la lojban"
+			.split(" ")
+			.map(|str| {
+				str
+					.chars()
+					.map(|char| Lerfu::new(char).unwrap())
+					.collect::<Vec<_>>()
+			})
+			.map(|suho_lerfu| TiValsiLaLojban_Vec::new(suho_lerfu).unwrap());
+		SuhoreValsi_Vec::new(suho_valsi).unwrap()
 	}
 }
 
@@ -27,21 +37,25 @@ impl Stodi for Lerfu {
 }
 
 impl Lerfu {
-	pub const unsafe fn new_unchecked(c: char) -> Self {
-		Lerfu(c)
-	}
-
 	pub fn new(c: char) -> Option<Self> {
 		let ret = unsafe { Lerfu::new_unchecked(c) };
 		ret.check_stodi().then_some(ret)
 	}
+}
 
-	pub const fn char(&self) -> char {
-		self.0
+/// Implementation understanding methdos
+impl Lerfu {
+	pub const unsafe fn new_unchecked(c: char) -> Self {
+		Lerfu(c)
 	}
 
-	pub unsafe fn unchecked_from_array<const N: usize>(arr: [char; N]) -> [Lerfu; N] {
-		arr.map(|char| unsafe { Lerfu::new_unchecked(char) })
+	pub const fn char(&self) -> &char {
+		&self.0
+	}
+
+	/// TODO: Don't use transmute
+	pub const fn from_ref(char: &char) -> &Self {
+		unsafe { std::mem::transmute(char) }
 	}
 }
 
@@ -169,4 +183,8 @@ macro_rules! lerfu {
 }
 pub use lerfu;
 
-use crate::{suhore_valsi::SuhoreValsi_Slice, tcita::Tcita_ti};
+use crate::{
+	suhore_valsi::{SuhoreValsi_Slice, SuhoreValsi_Vec},
+	tcita::Tcita_ti,
+	valsi::{TiValsiLaLojban_Slice, TiValsiLaLojban_Vec},
+};

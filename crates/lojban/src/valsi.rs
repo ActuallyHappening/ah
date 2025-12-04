@@ -1,3 +1,7 @@
+//! Things to note:
+//! For understanding, by [char] processing is employed even though this is
+//! inefficient
+
 use std::{borrow::Borrow, ops::Deref};
 
 use crate::lerfu::Lerfu;
@@ -20,6 +24,23 @@ impl Deref for TiValsiLaLojban_Vec {
 
 	fn deref(&self) -> &Self::Target {
 		self.as_slice()
+	}
+}
+
+/// Creation paths, not parsing
+impl TiValsiLaLojban_Vec {
+	pub fn new(inner: impl IntoIterator<Item = Lerfu>) -> Option<TiValsiLaLojban_Vec> {
+		let ret = unsafe { TiValsiLaLojban_Vec::new_unchecked(inner.into_iter().collect()) };
+		ret.check_stodi().then_some(ret)
+	}
+
+	pub fn new_from_str(s: impl Borrow<str>) -> Option<TiValsiLaLojban_Vec> {
+		let sohu_lerfu = s
+			.borrow()
+			.chars()
+			.map(|c| Lerfu::new(c))
+			.collect::<Option<Vec<_>>>()?;
+		Self::new(sohu_lerfu)
 	}
 }
 
@@ -51,6 +72,14 @@ impl Stodi for TiValsiLaLojban_Slice {
 	fn check_stodi(&self) -> bool {
 		// todo!()
 		true
+	}
+}
+
+/// Creation paths
+impl TiValsiLaLojban_Slice {
+	pub fn new(sohu_lerfu: &[Lerfu]) -> Option<&TiValsiLaLojban_Slice> {
+		let ret = unsafe { TiValsiLaLojban_Slice::new_unchecked(sohu_lerfu) };
+		ret.check_stodi().then_some(ret)
 	}
 }
 
