@@ -11,7 +11,8 @@ use crate::lerfu::Lerfu;
 /// # Invariants
 /// See [TiValsiLaLojban_Slice]
 #[derive(Debug, Clone)]
-pub struct TiValsiLaLojban_Vec(Vec<Lerfu>);
+pub struct TiValsiLaLojban_Vec(String);
+pub type ValsiVec = TiValsiLaLojban_Vec;
 
 impl Stodi for TiValsiLaLojban_Vec {
 	fn check_stodi(&self) -> bool {
@@ -30,29 +31,20 @@ impl Deref for TiValsiLaLojban_Vec {
 
 /// Creation paths, not parsing
 impl TiValsiLaLojban_Vec {
-	pub fn new(inner: impl IntoIterator<Item = Lerfu>) -> Option<TiValsiLaLojban_Vec> {
-		let ret = unsafe { TiValsiLaLojban_Vec::new_unchecked(inner.into_iter().collect()) };
+	pub fn new(inner: String) -> Option<TiValsiLaLojban_Vec> {
+		let ret = unsafe { TiValsiLaLojban_Vec::new_unchecked(inner) };
 		ret.check_stodi().then_some(ret)
-	}
-
-	pub fn new_from_str(s: impl Borrow<str>) -> Option<TiValsiLaLojban_Vec> {
-		let sohu_lerfu = s
-			.borrow()
-			.chars()
-			.map(|c| Lerfu::new(c))
-			.collect::<Option<Vec<_>>>()?;
-		Self::new(sohu_lerfu)
 	}
 }
 
 /// Implementation understanding methods
 impl TiValsiLaLojban_Vec {
-	pub unsafe fn new_unchecked(inner: Vec<Lerfu>) -> Self {
+	pub unsafe fn new_unchecked(inner: String) -> Self {
 		Self(inner)
 	}
 
 	pub fn as_slice(&self) -> &TiValsiLaLojban_Slice {
-		unsafe { TiValsiLaLojban_Slice::new_unchecked(self.0.as_slice()) }
+		unsafe { TiValsiLaLojban_Slice::new_unchecked(self.0.as_bytes()) }
 	}
 }
 
@@ -67,10 +59,15 @@ impl Borrow<TiValsiLaLojban_Slice> for TiValsiLaLojban_Vec {
 /// Must be morphologically a valid word.
 /// Therefore, can't be empty
 #[repr(transparent)]
-pub struct TiValsiLaLojban_Slice([Lerfu]);
+pub struct TiValsiLaLojban_Slice([u8]);
+pub type ValsiSlice = TiValsiLaLojban_Slice;
 
 impl Stodi for TiValsiLaLojban_Slice {
 	fn check_stodi(&self) -> bool {
+		let lerfu = match self.checked_iter() {
+			Some(lerfu) => lerfu,
+			None => return false,
+		};
 		// todo!()
 		true
 	}
@@ -78,21 +75,46 @@ impl Stodi for TiValsiLaLojban_Slice {
 
 /// Creation paths
 impl TiValsiLaLojban_Slice {
-	pub fn new(sohu_lerfu: &[Lerfu]) -> Option<&TiValsiLaLojban_Slice> {
-		let ret = unsafe { TiValsiLaLojban_Slice::new_unchecked(sohu_lerfu) };
+	pub fn new(sohu_lerfu: &str) -> Option<&TiValsiLaLojban_Slice> {
+		let ret = unsafe { TiValsiLaLojban_Slice::new_unchecked(sohu_lerfu.as_bytes()) };
 		ret.check_stodi().then_some(ret)
 	}
 }
 
-/// Implementation understanding methods
+/// Invariant cautious 
 impl TiValsiLaLojban_Slice {
-	pub unsafe fn new_unchecked(inner: &[Lerfu]) -> &TiValsiLaLojban_Slice {
+	
+}
+
+/// Implementation understanding methods,
+/// each must uphold invariant always
+impl TiValsiLaLojban_Slice {
+	#[invariant(inner == &ret.0)]
+	pub unsafe fn new_unchecked(inner: &[u8]) -> &TiValsiLaLojban_Slice {
 		// TODO: Not use transmute here
-		unsafe { std::mem::transmute(inner) }
+		unsafe { std::mem::transmute::<&[u8], &TiValsiLaLojban_Slice>(inner) }
 	}
 
-	pub fn as_slice(&self) -> &[Lerfu] {
-		&self.0
+	/// Catious around invariant
+	fn checked_as_str(&self) -> Option<&str> {
+		std::str::from_utf8(&self.0).ok()
+	}
+
+	/// Catious around invariant
+	fn checked_iter(&self) -> Option<impl Iterator<Item = Lerfu>> {
+		self
+			.checked_as_str()
+			.map(|str| str.chars().map(|c| Lerfu::new(c).unwrap()))
+	}
+
+	#[stodi::invariant(self.check_stodi())]
+	pub fn as_str(&self) -> &str {
+		self.checked_as_str().unwrap()
+	}
+
+	#[stodi::invariant(self.check_stodi())]
+	pub fn iter(&self) -> impl Iterator<Item = Lerfu> {
+		self.checked_iter().unwrap()
 	}
 }
 
@@ -100,7 +122,7 @@ impl<'w> ToOwned for TiValsiLaLojban_Slice {
 	type Owned = TiValsiLaLojban_Vec;
 
 	fn to_owned(&self) -> Self::Owned {
-		unsafe { TiValsiLaLojban_Vec::new_unchecked(self.as_slice().to_vec()) }
+		unsafe { TiValsiLaLojban_Vec::new_unchecked(String::from_utf8_unchecked(self.0.to_vec())) }
 	}
 }
 
@@ -118,5 +140,5 @@ macro_rules! valsi {
 	};
 }
 
-use stodi::Stodi;
+use stodi::{Stodi, invariant};
 pub use valsi;
