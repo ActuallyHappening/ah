@@ -3,8 +3,8 @@
 //! inefficient
 
 use contracts::{ensures, requires};
-use std::{borrow::Borrow, ops::Deref, sync::Arc};
-use stodi::{Stodi, invariant};
+use std::{borrow::Borrow, ops::Deref};
+use stodi::Stodi;
 
 use crate::lerfu::Lerfu;
 
@@ -45,7 +45,7 @@ impl TiValsiLaLojban_String {
 
 impl Borrow<TiValsiLaLojban_Str> for TiValsiLaLojban_String {
 	fn borrow(&self) -> &TiValsiLaLojban_Str {
-		&self
+		self
 	}
 }
 

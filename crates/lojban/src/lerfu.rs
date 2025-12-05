@@ -1,8 +1,4 @@
-use crate::{
-	suhore_valsi::SuhoreValsi_Slice,
-	tcita::Tcita_ti,
-	valsi::{TiValsiLaLojban_Str, TiValsiLaLojban_String, ValsiStr, ValsiString},
-};
+use crate::tcita::Tcita_ti;
 use stodi::Stodi;
 
 /// Full name: pa lerfu la lojban
@@ -72,7 +68,7 @@ pub use exceptions::*;
 mod exceptions {
 	//! TODO LOJBAN: Find a name for exceptions
 
-	use crate::{lerfu::Lerfu, tcita::Tcita_ti};
+	use crate::tcita::Tcita_ti;
 
 	#[derive(Debug, thiserror::Error)]
 	#[error("Character '{0}' ({0:?}) is not a valid lerfu\nSee {url}", url = Self::tcita_index_url())]
@@ -90,7 +86,7 @@ pub use classifications::*;
 mod classifications {
 	use ah_sets::{FiniteSet, Set};
 
-	use crate::{lerfu::Lerfu, tcita::Tcita_ti};
+	use crate::lerfu::Lerfu;
 
 	/// TODO LOJBAN: Is the use of .pa. correct ici?
 	/// Set[lo'i] of single[pa]-letter[lerfu] vowels[karsna]

@@ -7,7 +7,6 @@
 
 use stodi::Stodi;
 
-use crate::valsi::{TiValsiLaLojban_Str, TiValsiLaLojban_String, ValsiStr, ValsiString};
 
 // #[derive(Debug, Clone)]
 // pub struct SuhoreValsi_String(Arc<String>);
