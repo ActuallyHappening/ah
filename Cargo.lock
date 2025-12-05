@@ -7,6 +7,7 @@ name = "ah-lojban"
 version = "0.1.0"
 dependencies = [
  "ah-sets",
+ "contracts",
  "stodi",
 ]
 

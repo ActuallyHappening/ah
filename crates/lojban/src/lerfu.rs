@@ -1,7 +1,7 @@
 use crate::{
-	suhore_valsi::{SuhoreValsi_Slice, SuhoreValsi_Vec},
+	suhore_valsi::SuhoreValsi_Slice,
 	tcita::Tcita_ti,
-	valsi::{TiValsiLaLojban_Slice, TiValsiLaLojban_Vec, ValsiSlice},
+	valsi::{TiValsiLaLojban_Str, TiValsiLaLojban_String, ValsiStr, ValsiString},
 };
 use stodi::Stodi;
 
@@ -14,11 +14,8 @@ use stodi::Stodi;
 pub struct Lerfu(char);
 
 impl Tcita_ti for Lerfu {
-	fn full_abstract_tcita_ti() -> SuhoreValsi_Vec {
-		let suho_valsi = "pa lerfu la lojban"
-			.split(" ")
-			.map(|suho_lerfu| ValsiSlice::new(&suho_lerfu).unwrap());
-		SuhoreValsi_Vec::new(suho_valsi).unwrap()
+	fn full_abstract_tcita_ti() -> &'static str {
+		"pa lerfu la lojban"
 	}
 }
 
@@ -52,9 +49,8 @@ impl Lerfu {
 		&self.0
 	}
 
-	/// TODO: Don't use transmute
 	pub const fn from_ref(char: &char) -> &Self {
-		unsafe { std::mem::transmute(char) }
+		unsafe { &*(char as *const char as *const Lerfu) }
 	}
 }
 
@@ -71,6 +67,39 @@ impl PartialEq for Lerfu {
 		self.0.eq_ignore_ascii_case(&other.0)
 	}
 }
+
+pub use classifications::*;
+mod classifications {
+	use ah_sets::{FiniteSet, Set};
+
+	use crate::{tcita::Tcita_ti, vlalehu::lerfu::Lerfu};
+
+	/// TODO LOJBAN: Is the use of .pa. correct ici?
+	/// Set[lo'i] of single[pa]-letter[lerfu] vowels[karsna]
+	pub struct Lohi_pa_lerfu_karsna;
+
+	impl Lohi_pa_lerfu_karsna {
+		pub const PA_LERFU: [Lerfu; 6] = [
+			Lerfu('a'),
+			Lerfu('e'),
+			Lerfu('i'),
+			Lerfu('o'),
+			Lerfu('u'),
+			Lerfu('y'),
+		];
+	}
+
+	impl Set<Lerfu> for Lohi_pa_lerfu_karsna {
+		fn contains(&self, item: &Lerfu) -> bool {
+			Self::PA_LERFU.contains(item)
+		}
+	}
+
+	impl FiniteSet<Lerfu> for Lohi_pa_lerfu_karsna {
+		fn all_in_memory(&self) -> &[Lerfu] {
+			&Self::PA_LERFU
+		}
+	}
 
 #[test]
 fn lerfu_macro() {

@@ -1,50 +1,10 @@
-pub mod tcita {
-	//! tcita = x1 name/label/tag of x2
-
-	use crate::{
-		suhore_valsi::{SuhoreValsi_Slice, SuhoreValsi_Vec},
-		valsi::{TiValsiLaLojban_Slice, TiValsiLaLojban_Vec},
-	};
-
-	pub trait Tcita_ti {
-		/// TODO LOJBAN: *Full* name of self as an *abstraction* concept,
-		/// implying uniqueness
-		fn full_abstract_tcita_ti() -> SuhoreValsi_Vec;
-	}
-}
 pub mod lerfu;
 pub mod suhore_valsi;
 pub mod valsi;
-// pub mod classifications {
-// 	use ah_sets::{FiniteSet, Set};
 
-// 	use crate::{tcita::Tcita_ti, vlalehu::lerfu::Lerfu};
+pub mod parsing;
 
-// 	/// Set[lo'i] of single[pa]-letter[lerfu] vowels[karsna]
-// 	pub struct Lohi_pa_lerfu_karsna;
-
-// 	impl Lohi_pa_lerfu_karsna {
-// 		pub const PA_LERFU: [Lerfu; 6] = [
-// 			Lerfu('a'),
-// 			Lerfu('e'),
-// 			Lerfu('i'),
-// 			Lerfu('o'),
-// 			Lerfu('u'),
-// 			Lerfu('y'),
-// 		];
-// 	}
-
-// 	impl Set<Lerfu> for Lohi_pa_lerfu_karsna {
-// 		fn contains(&self, item: &Lerfu) -> bool {
-// 			Self::PA_LERFU.contains(item)
-// 		}
-// 	}
-
-// 	impl FiniteSet<Lerfu> for Lohi_pa_lerfu_karsna {
-// 		fn all_in_memory(&self) -> &[Lerfu] {
-// 			&Self::PA_LERFU
-// 		}
-// 	}
+pub mod tcita;
 
 // 	pub struct Punctuation;
 // }

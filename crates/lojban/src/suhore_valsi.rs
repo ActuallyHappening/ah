@@ -7,46 +7,56 @@
 
 use stodi::Stodi;
 
-use crate::valsi::{TiValsiLaLojban_Slice, TiValsiLaLojban_Vec};
+use crate::valsi::{TiValsiLaLojban_Str, TiValsiLaLojban_String, ValsiStr, ValsiString};
 
-#[derive(Debug, Clone)]
-pub struct SuhoreValsi_Vec(Vec<TiValsiLaLojban_Vec>);
+// #[derive(Debug, Clone)]
+// pub struct SuhoreValsi_String(Arc<String>);
 
-impl Stodi for SuhoreValsi_Vec {
+// impl Stodi for SuhoreValsi_String {
+// 	fn check_stodi(&self) -> bool {
+// 		// self.
+// 	}
+// }
+
+// /// Creation paths
+// impl SuhoreValsi_String {
+// 	pub fn new(inner: impl IntoIterator<Item = TiValsiLaLojban_String>) -> Option<Self> {
+// 		let ret = unsafe { Self::new_unchecked(inner.into_iter().collect::<Vec<_>>()) };
+// 		ret.check_stodi().then_some(ret)
+// 	}
+// }
+
+// /// Implementation understanding methods.
+// /// Invariant cautious
+// impl SuhoreValsi_String {
+// 	pub const unsafe fn new_unchecked(inner: Vec<TiValsiLaLojban_String>) -> Self {
+// 		SuhoreValsi_String(inner)
+// 	}
+
+// 	pub fn as_slice(&self) -> &[&ValsiSlice] {
+// 		self
+// 			.0
+// 			.as_slice()
+// 			.map(|valsi_string| valsi_string.as_slice())
+// 	}
+// }
+
+#[derive(Debug)]
+#[repr(transparent)]
+pub struct SuhoreValsi_Slice(str);
+
+impl Stodi for SuhoreValsi_Slice {
 	fn check_stodi(&self) -> bool {
-		if self.0.len() <= 1 {
+		if self.0.len() < 2 {
 			return false;
 		}
-		// TODO SOUNDNESS
+		// TODO SOUNDNESS: actually parse
 		true
 	}
 }
 
-impl SuhoreValsi_Vec {
-	pub fn new(inner: impl IntoIterator<Item = TiValsiLaLojban_Vec>) -> Option<Self> {
-		let ret = unsafe { Self::new_unchecked(inner.into_iter().collect::<Vec<_>>()) };
-		ret.check_stodi().then_some(ret)
-	}
-}
-
-/// Implementation understanding methods
-impl SuhoreValsi_Vec {
-	pub const unsafe fn new_unchecked(inner: Vec<TiValsiLaLojban_Vec>) -> Self {
-		SuhoreValsi_Vec(inner)
-	}
-}
-
-pub struct SuhoreValsi_Slice<'valsi>([&'valsi TiValsiLaLojban_Slice]);
-
-impl Stodi for SuhoreValsi_Slice<'_> {
-	fn check_stodi(&self) -> bool {
-		self.0.len() >= 2
-	}
-}
-
-impl<'valsi> SuhoreValsi_Slice<'valsi> {
-	pub unsafe fn new_unchecked<'s>(inner: &'s [&'valsi TiValsiLaLojban_Slice]) -> &'s Self {
-		// TODO: Don't use transmute here!
-		unsafe { std::mem::transmute(inner) }
+impl SuhoreValsi_Slice {
+	pub unsafe fn new_unchecked(inner: &str) -> &Self {
+		unsafe { &*(inner as *const str as *const SuhoreValsi_Slice) }
 	}
 }

@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 stodi.workspace = true
 ah-sets.workspace = true
+contracts = "0.6.7"
 
 [lints]
 workspace = true
