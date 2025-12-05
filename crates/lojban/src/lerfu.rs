@@ -19,13 +19,6 @@ impl Tcita_ti for Lerfu {
 	}
 }
 
-impl Lerfu {
-	pub const ALLOWED: [char; 26] = [
-		'\'', ',', '.', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'r',
-		's', 't', 'u', 'v', 'x', 'y', 'z',
-	];
-}
-
 impl Stodi for Lerfu {
 	fn check_stodi(&self) -> bool {
 		Self::ALLOWED.contains(&self.0)
@@ -33,9 +26,16 @@ impl Stodi for Lerfu {
 }
 
 impl Lerfu {
-	pub fn new(c: char) -> Option<Self> {
+	pub const ALLOWED: [char; 26] = [
+		'\'', ',', '.', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'r',
+		's', 't', 'u', 'v', 'x', 'y', 'z',
+	];
+}
+
+impl Lerfu {
+	pub fn new(c: char) -> Result<Self, CharNotLerfu> {
 		let ret = unsafe { Lerfu::new_unchecked(c) };
-		ret.check_stodi().then_some(ret)
+		ret.check_stodi().then_some(ret).ok_or(CharNotLerfu(c))
 	}
 }
 
@@ -68,14 +68,15 @@ impl PartialEq for Lerfu {
 	}
 }
 
+pub use exceptions::*;
 mod exceptions {
 	//! TODO LOJBAN: Find a name for exceptions
 
 	use crate::{lerfu::Lerfu, tcita::Tcita_ti};
 
 	#[derive(Debug, thiserror::Error)]
-	#[error("Character '{0}' ({0:?}) is not a valid lerfu\nSee {url}", url = CharNotLerfu::tcita_index_url())]
-	pub struct CharNotLerfu(Lerfu);
+	#[error("Character '{0}' ({0:?}) is not a valid lerfu\nSee {url}", url = Self::tcita_index_url())]
+	pub struct CharNotLerfu(pub(super) char);
 
 	impl Tcita_ti for CharNotLerfu {
 		fn tcita_ti_full_abstract() -> &'static str {
@@ -119,6 +120,17 @@ mod classifications {
 	}
 }
 
+#[cfg(test)]
+mod test {
+	use super::*;
+
+	#[test]
+	fn test_lerfu_rejects_invalid_char() {
+		assert!(Lerfu::new('q').is_err());
+		assert!(Lerfu::new('w').is_err());
+		assert!(Lerfu::new(' ').is_err());
+	}
+}
 #[test]
 fn lerfu_macro() {
 	assert_eq!(lerfu!(h), lerfu!('\''));

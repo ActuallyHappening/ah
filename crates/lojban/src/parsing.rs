@@ -1,10 +1,13 @@
 use std::{borrow::Borrow, marker::PhantomData};
 
+use crate::lerfu::{CharNotLerfu, Lerfu};
+
 #[derive(Default, Clone)]
 pub struct ParserSettings {
 	_none: PhantomData<()>,
 }
 
+#[derive(Default)]
 pub struct Parser {
 	pub settings: ParserSettings,
 	_unknown: PhantomData<()>,
@@ -22,6 +25,10 @@ impl Parser {
 impl Parser {
 	pub fn parse(&self, input: impl Borrow<str>) -> ParserResult {
 		todo!()
+	}
+
+	pub fn parse_lerfu(&self, input: char) -> Result<Lerfu, CharNotLerfu> {
+		Lerfu::new(input)
 	}
 }
 

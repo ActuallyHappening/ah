@@ -15,14 +15,46 @@ pub trait Tcita_ti {
 	/// TODO: Add the invariant to the type signature
 	fn tcita_ti_full_abstract() -> &'static str;
 
-	/// TODO: Experiment with ID including apostrophe's[su'o y'y] in id's instead of 'h's
 	fn tcita_index_url() -> String {
-		fn url_encode(s: &str) -> String {
-			s.replace("'", "h").replace(" ", "%20")
+		/// TODO: Experiment with ID including apostrophe's[su'o y'y] in id's instead of 'h's
+		fn github_url_encode(s: &str) -> String {
+			s.replace("'", "").replace(".", "").replace(" ", "-")
 		}
 		format!(
 			"https://github.com/ActuallyHappening/ah/blob/master/index.md#{}",
-			url_encode(Self::tcita_ti_full_abstract())
+			github_url_encode(Self::tcita_ti_full_abstract())
 		)
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use crate::lerfu::CharNotLerfu;
+
+	use super::*;
+
+	struct Test;
+
+	impl Tcita_ti for Test {
+		fn tcita_ti_full_abstract() -> &'static str {
+			"le .cipra. .i y'y"
+		}
+	}
+
+	#[test]
+	fn test_tcita_cipra_index_url() {
+		let url = Test::tcita_index_url();
+		let expected = "https://github.com/ActuallyHappening/ah/blob/master/index.md#le-cipra-i-yy";
+		dbg!(&url);
+		assert_eq!(url, expected)
+	}
+
+	#[test]
+	fn test_tcita_lerfu_exception_index_url() {
+		let url = CharNotLerfu::tcita_index_url();
+		let expected =
+			"https://github.com/ActuallyHappening/ah/blob/master/index.md#ti-daavni-le-parsing-lerfu";
+		dbg!(&url);
+		assert_eq!(url, expected)
 	}
 }

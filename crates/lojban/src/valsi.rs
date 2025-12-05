@@ -50,9 +50,11 @@ impl Borrow<TiValsiLaLojban_Str> for TiValsiLaLojban_String {
 }
 
 /// [ti] Word[valsi] [la] in Lojban[lojban]
+///
 /// # Invariants
 /// All chars must be valid la lojban lerfu.
 /// Must be morphologically a valid la lojban word.
+/// TODO ABSTRACTION: Are any parsing invariants upheld in the type here?
 #[derive(Debug)]
 #[repr(transparent)]
 pub struct TiValsiLaLojban_Str(str);
@@ -76,7 +78,7 @@ impl TiValsiLaLojban_Str {
 		self
 			.0
 			.chars()
-			.map(|c| Lerfu::new(c))
+			.map(|c| Lerfu::new(c).ok())
 			.collect::<Option<Vec<_>>>()
 	}
 }
