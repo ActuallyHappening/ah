@@ -12,5 +12,17 @@ pub trait Tcita_ti {
 	/// # Invariant
 	/// Is valid Lojban
 	/// TODO ABSTRACTION: What constructions are valid as names?
-	fn full_abstract_tcita_ti() -> &'static str;
+	/// TODO: Add the invariant to the type signature
+	fn tcita_ti_full_abstract() -> &'static str;
+
+	/// TODO: Experiment with ID including apostrophe's[su'o y'y] in id's instead of 'h's
+	fn tcita_index_url() -> String {
+		fn url_encode(s: &str) -> String {
+			s.replace("'", "h").replace(" ", "%20")
+		}
+		format!(
+			"https://github.com/ActuallyHappening/ah/blob/master/index.md#{}",
+			url_encode(Self::tcita_ti_full_abstract())
+		)
+	}
 }

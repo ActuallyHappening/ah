@@ -1,4 +1,4 @@
-use std::marker::PhantomData;
+use std::{borrow::Borrow, marker::PhantomData};
 
 #[derive(Default, Clone)]
 pub struct ParserSettings {
@@ -26,5 +26,5 @@ impl Parser {
 }
 
 pub struct ParserResult {
-	pub paragraphs: Vec<Paragraph>,
+	// pub paragraphs: Vec<Paragraph>,
 }

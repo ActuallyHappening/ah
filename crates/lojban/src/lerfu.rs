@@ -14,7 +14,7 @@ use stodi::Stodi;
 pub struct Lerfu(char);
 
 impl Tcita_ti for Lerfu {
-	fn full_abstract_tcita_ti() -> &'static str {
+	fn tcita_ti_full_abstract() -> &'static str {
 		"pa lerfu la lojban"
 	}
 }
@@ -68,11 +68,28 @@ impl PartialEq for Lerfu {
 	}
 }
 
+mod exceptions {
+	//! TODO LOJBAN: Find a name for exceptions
+
+	use crate::{lerfu::Lerfu, tcita::Tcita_ti};
+
+	#[derive(Debug, thiserror::Error)]
+	#[error("Character '{0}' ({0:?}) is not a valid lerfu\nSee {url}", url = CharNotLerfu::tcita_index_url())]
+	pub struct CharNotLerfu(Lerfu);
+
+	impl Tcita_ti for CharNotLerfu {
+		fn tcita_ti_full_abstract() -> &'static str {
+			// TODO LOJBAN: this is an exception for the rule that all characters must be valid lerfu
+			"ti da'avni le .parsing. lerfu"
+		}
+	}
+}
+
 pub use classifications::*;
 mod classifications {
 	use ah_sets::{FiniteSet, Set};
 
-	use crate::{tcita::Tcita_ti, vlalehu::lerfu::Lerfu};
+	use crate::{lerfu::Lerfu, tcita::Tcita_ti};
 
 	/// TODO LOJBAN: Is the use of .pa. correct ici?
 	/// Set[lo'i] of single[pa]-letter[lerfu] vowels[karsna]
@@ -100,6 +117,7 @@ mod classifications {
 			&Self::PA_LERFU
 		}
 	}
+}
 
 #[test]
 fn lerfu_macro() {

@@ -2,7 +2,9 @@
 //! For understanding, by [char] processing is employed even though this is
 //! inefficient
 
+use contracts::{ensures, requires};
 use std::{borrow::Borrow, ops::Deref, sync::Arc};
+use stodi::{Stodi, invariant};
 
 use crate::lerfu::Lerfu;
 
@@ -29,14 +31,6 @@ impl Deref for TiValsiLaLojban_String {
 	}
 }
 
-/// Creation paths, not parsing
-impl TiValsiLaLojban_String {
-	pub fn new(inner: String) -> Option<TiValsiLaLojban_String> {
-		let ret = unsafe { TiValsiLaLojban_String::new_unchecked(inner) };
-		ret.check_stodi().then_some(ret)
-	}
-}
-
 /// Implementation understanding methods.
 /// Invariant cautious
 impl TiValsiLaLojban_String {
@@ -45,7 +39,7 @@ impl TiValsiLaLojban_String {
 	}
 
 	pub fn as_slice(&self) -> &TiValsiLaLojban_Str {
-		unsafe { TiValsiLaLojban_Str::new_unchecked(self.0.as_bytes()) }
+		unsafe { TiValsiLaLojban_Str::new_unchecked(&self.0) }
 	}
 }
 
@@ -57,6 +51,7 @@ impl Borrow<TiValsiLaLojban_Str> for TiValsiLaLojban_String {
 
 /// [ti] Word[valsi] [la] in Lojban[lojban]
 /// # Invariants
+/// All chars must be valid la lojban lerfu.
 /// Must be morphologically a valid la lojban word.
 #[derive(Debug)]
 #[repr(transparent)]
@@ -95,13 +90,13 @@ impl TiValsiLaLojban_Str {
 		unsafe { &*(inner as *const str as *const TiValsiLaLojban_Str) }
 	}
 
-	#[stodi::invariant(self.check_stodi())]
+	#[requires(self.check_stodi())]
 	pub fn as_str(&self) -> &str {
-		self.checked_as_str().unwrap()
+		&self.0
 	}
 
-	#[stodi::invariant(self.check_stodi())]
-	pub fn iter(&self) -> impl Iterator<Item = Lerfu> {
+	#[requires(self.check_stodi())]
+	pub fn iter(&self) -> impl IntoIterator<Item = Lerfu> {
 		self.checked_iter().unwrap()
 	}
 }
@@ -110,24 +105,6 @@ impl<'w> ToOwned for TiValsiLaLojban_Str {
 	type Owned = TiValsiLaLojban_String;
 
 	fn to_owned(&self) -> Self::Owned {
-		unsafe { TiValsiLaLojban_String::new_unchecked(String::from_utf8_unchecked(self.0.to_vec())) }
+		unsafe { TiValsiLaLojban_String::new_unchecked(self.0.to_owned()) }
 	}
 }
-
-#[test]
-fn test_valsi_macro() {
-	// valsi!(abc);
-}
-
-#[macro_export]
-macro_rules! valsi {
-	($($letter:ident),+) => {
-		[
-			$($crate::lerfu::lerfu!($letter)),+
-		]
-	};
-}
-
-use contracts::ensures;
-use stodi::{Stodi, invariant};
-pub use valsi;

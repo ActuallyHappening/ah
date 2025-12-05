@@ -1,5 +1,6 @@
 /// For invariants that are cheap to check
 pub trait Stodi {
+	/// Should be cheap to check, runtime at most O(n) as self grows
 	fn check_stodi(&self) -> bool;
 
 	/// TODO LOJBAN: Name this better
