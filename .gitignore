@@ -1,9 +1,12 @@
 /*
 
 !crates
+!sazycimde
 
 !.gitignore
 !Cargo.toml
 !Cargo.lock
 !LICENSE
 !index.md
+!README.md
+!rustfmt.toml
