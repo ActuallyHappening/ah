@@ -49,6 +49,15 @@ pub mod siho_selylehu {
 		}
 	}
 
+	impl Set<char> for Sohi_lojbo_selylehu {
+		fn contains(&self, item: &char) -> bool {
+			let Ok(u8) = u8::try_from(*item) else {
+				return false;
+			};
+			Self::ALLOWED.contains(&u8)
+		}
+	}
+
 	#[test]
 	fn stodi_muha_sohi_lojbo_selylehu() {
 		assert!(Sohi_lojbo_selylehu::default().check_stodi());
@@ -56,6 +65,10 @@ pub mod siho_selylehu {
 }
 
 pub mod le_lerfu {
+	use ah_sets::Set;
+	use stodi::Stodi;
+
+	use crate::siho_selylehu::Sohi_lojbo_selylehu;
 
 	/// ```lojban
 	/// jbole'u
@@ -64,5 +77,32 @@ pub mod le_lerfu {
 	/// ```english
 	/// Lojban character
 	/// ```
-	pub struct Strict_jbolehu(u8);
+	#[derive(Clone, Copy)]
+	pub struct Jbolehu(u8);
+
+	impl Stodi for Jbolehu {
+		fn check_stodi(&self) -> bool {
+			Sohi_lojbo_selylehu::default().contains(&self.0)
+				&& format!("{}", self) == self.char().to_string()
+		}
+	}
+
+	impl Jbolehu {
+		#[contracts::requires(self.check_stodi())]
+		pub fn char(self) -> char {
+			char::try_from(self.0).unwrap()
+		}
+	}
+
+	impl std::fmt::Display for Jbolehu {
+		fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+			write!(f, "{}", self.char())
+		}
+	}
+
+	impl std::fmt::Debug for Jbolehu {
+		fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+			f.debug_tuple("Jbole'u").field(&self.0).finish()
+		}
+	}
 }
