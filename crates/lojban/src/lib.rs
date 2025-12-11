@@ -83,7 +83,10 @@ pub mod le_lerfu {
 	impl Stodi for Le_jbolehu {
 		fn check_stodi(&self) -> bool {
 			Sohi_lojbo_selylehu::default().contains(&self.0)
-				&& format!("{}", self) == self.char().to_string()
+		}
+
+		fn check_ro_stodi(&self) -> bool {
+			self.check_stodi() && format!("{}", self) == self.char().to_string()
 		}
 	}
 
