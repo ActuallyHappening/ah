@@ -5,6 +5,8 @@
 //! Label in language lojban
 //! ```
 
+pub use ah_tcita_macros::*;
+
 /// ```lojban
 /// ka tcita
 /// ```

@@ -23,6 +23,7 @@ name = "ah-lojban"
 version = "0.1.0"
 dependencies = [
  "ah-sets",
+ "ah-tcita",
  "contracts",
  "stodi",
  "thiserror 2.0.17",
@@ -42,6 +43,9 @@ version = "0.1.0"
 [[package]]
 name = "ah-tcita"
 version = "0.1.0"
+dependencies = [
+ "ah-tcita-macros",
+]
 
 [[package]]
 name = "ah-tcita-macros"
