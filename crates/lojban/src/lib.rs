@@ -1,32 +1,68 @@
-pub mod lerfu;
-pub mod suhore_valsi;
-pub mod valsi;
+pub mod siho_selylehu {
+	//! ```lojban
+	//! si'o selyle'u
+	//! .idu si'o se lerfu
+	//! ```
+	//! ```english
+	//! The concepts|ideas about alphabet/s
+	//! ```
 
-pub mod parsing;
+	use ah_sets::Set;
+	use stodi::Stodi;
 
-pub mod tcita;
+	/// ```lojban
+	/// si'o selyle'u
+	/// ```
+	/// ```english
+	/// The concept|idea of an alphabet.
+	/// The trait for a character set.
+	/// ```
+	/// The `Set<u8>` should be an upcast from `u8` to `char`
+	pub trait Sohi_selylehu: Set<char> + Set<u8> {}
 
-// 	pub struct Punctuation;
-// }
+	/// ```lojban
+	/// so'i lojbo selyle'u
+	/// ```
+	/// ```english
+	/// The concept of (specifically) the Lojban alphabet
+	/// ```
+	#[derive(Clone, Copy, Default)]
+	pub struct Sohi_lojbo_selylehu;
 
-// pub mod classifications {
-// 	pub mod cmavo {
-// 		use std::borrow::Borrow;
+	impl Sohi_lojbo_selylehu {
+		pub const ALLOWED_REF: &[u8] = b"',.abcdefgijklmnoprstuvxyz";
+		pub const ALLOWED: [u8; 26] = [
+			39, 44, 46, 97, 98, 99, 100, 101, 102, 103, 105, 106, 107, 108, 109, 110, 111, 112, 114, 115,
+			116, 117, 118, 120, 121, 122,
+		];
+	}
 
-// 		use ah_sets::Set;
+	impl Stodi for Sohi_lojbo_selylehu {
+		fn check_stodi(&self) -> bool {
+			&Self::ALLOWED == Self::ALLOWED_REF
+		}
+	}
 
-// 		use crate::vlalehu::valsi::{TiValsiLaLojban_Slice, TiValsiLaLojban_Vec};
+	impl Set<u8> for Sohi_lojbo_selylehu {
+		fn contains(&self, item: &u8) -> bool {
+			Self::ALLOWED.contains(item)
+		}
+	}
 
-// 		pub struct Cmavo;
+	#[test]
+	fn stodi_muha_sohi_lojbo_selylehu() {
+		assert!(Sohi_lojbo_selylehu::default().check_stodi());
+	}
+}
 
-// 		impl<W> Set<W> for Cmavo
-// 		where
-// 			W: Borrow<TiValsiLaLojban_Slice>,
-// 		{
-// 			fn contains(&self, item: &W) -> bool {
-// 				let word: &TiValsiLaLojban_Slice = item.borrow();
-// 				todo!()
-// 			}
-// 		}
-// 	}
-// }
+pub mod le_lerfu {
+
+	/// ```lojban
+	/// jbole'u
+	/// .idu lojbo lerfu
+	/// ```
+	/// ```english
+	/// Lojban character
+	/// ```
+	pub struct Strict_jbolehu(u8);
+}
