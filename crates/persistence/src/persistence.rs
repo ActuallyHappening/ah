@@ -101,7 +101,7 @@ impl PersistenceEngine {
 	pub async fn select_sidbo<TSidbo>(
 		&self,
 		ids: impl IntoIterator<Item = SidboTcita>,
-	) -> Result<HashSet<crate::sidbo::Sidbo>>
+	) -> Result<Vec<TSidbo>>
 	where
 		TSidbo: TryFrom<crate::sidbo::Sidbo>,
 		<TSidbo as TryFrom<crate::sidbo::Sidbo>>::Error: std::fmt::Debug,
@@ -112,12 +112,12 @@ impl PersistenceEngine {
 		}
 		let map = map.into_iter().map(|sidbo| {
 			let id = sidbo.get_id().clone();
-			crate::sidbo::Sidbo::try_from(sidbo).map_err(|err| Error::SidboConversionFailed {
+			TSidbo::try_from(sidbo).map_err(|err| Error::SidboConversionFailed {
 				id,
 				err_debug: format!("{:?}", err),
 			})
 		});
-		let map = map.collect::<Result<HashSet<_>>>()?;
+		let map = map.collect::<Result<Vec<_>>>()?;
 		Ok(map)
 	}
 

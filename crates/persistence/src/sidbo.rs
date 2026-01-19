@@ -81,6 +81,12 @@ macro_rules! packaji_sidbo {
 				Ok(Self { id, ckaji })
 			}
 		}
+
+		impl $ident {
+			pub fn ckaji(&self) -> &$ckaji {
+				&self.ckaji
+			}
+		}
 	};
 }
 

@@ -3,6 +3,7 @@ use std::collections::HashSet;
 use ah_persistence::{
 	PersistenceEngine, PersistenceEngineBuilder, SidboBuilder, sidbo::SidboTcita,
 };
+use color_eyre::eyre;
 
 use crate::{
 	prelude::*,
@@ -39,9 +40,13 @@ impl Timetracker {
 			.wrap_err("Couldn't get billing company")
 	}
 
-	pub async fn get_billing_companies(&self) -> Result<HashSet<BillingCompanySidbo>> {
-		let ids = self.persistence.select_ckaji_sidbo::<BillingCompanyCkaji>().await?;
-			todo!()
+	pub async fn get_billing_companies(&self) -> Result<Vec<BillingCompanySidbo>> {
+		let ids = self
+			.persistence
+			.select_ckaji_sidbo::<BillingCompanyCkaji>()
+			.await?;
+		let companies = self.persistence.select_sidbo(ids).await?;
+		Ok(companies)
 	}
 }
 
@@ -107,11 +112,19 @@ impl AddProject {
 
 impl Timetracker {
 	pub async fn add_project(&self, company: AddProject) -> Result<ProjectSidbo> {
+		let companies = self.get_billing_companies().await?;
+		let bcompany = companies
+			.into_iter()
+			.find(|c| c.ckaji().proper_name == company.proper_name);
+		let company = bcompany.ok_or(eyre!(
+			"No company with proper name {} found",
+			company.proper_name
+		))?;
+
 		// TODO: check for duplicates
-		let companies
 
 		let sidbo = SidboBuilder::new(company.tcita()).add_ckaji(ProjectCkaji {
-			billing_company: todo!(),
+			billing_company: company.id,
 			proper_name: company.proper_name,
 			short_name: company.short_name,
 		})?;
