@@ -8,6 +8,7 @@ use crate::prelude::*;
 	lojban = "TODO ah-timetracker su'u internal state",
 	glico = "Timetracker internal state abstraction"
 )]
+#[tcita("TODO ah-timetracker su'u internal state")]
 pub struct TimetrackerCkaji {
 	pub(crate) active: Option<Active>,
 }

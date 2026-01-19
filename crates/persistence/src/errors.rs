@@ -17,6 +17,14 @@ pub enum Error {
 	},
 	#[error("Expected data wasn't found: {id:?}")]
 	SelectMissing { id: SidboTcita },
+	#[error("Failed to deserialize extracted {id} ckaji {ckaji_id}: {err}")]
+	ExtractCkajiDeserialize {
+		id: SidboTcita,
+		ckaji_id: String,
+		err: serde_json::Error,
+	},
+	#[error("Failed to extract {id} ckaji {id}")]
+	ExtractCkajiMissing { id: SidboTcita, ckaji_id: String },
 }
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;

@@ -1,6 +1,8 @@
 use ah_persistence::{PersistenceEngine, PersistenceEngineBuilder, sidbo::SidboTcita};
 
-use crate::{prelude::*, timetracker_ckaji::BillingCompanyCkaji};
+use crate::{
+	prelude::*, timetracker_ckaji::BillingCompanyCkaji, timetracker_sidbo::TimetrackerSidbo,
+};
 
 pub struct Timetracker {
 	persistence: PersistenceEngine,
@@ -13,6 +15,11 @@ impl Timetracker {
 			.connect()
 			.await?;
 		Ok(Self { persistence })
+	}
+
+	pub async fn primary_sidbo(&self) -> Result<TimetrackerSidbo> {
+		todo!()
+		// self.persistence.select(TimetrackerSidbo::TCITA).await
 	}
 
 	pub fn select_billing_company(&self, id: SidboTcita) -> Result<BillingCompanyCkaji> {

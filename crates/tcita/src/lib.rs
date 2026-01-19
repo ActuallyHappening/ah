@@ -11,7 +11,8 @@ pub use ah_tcita_macros::*;
 /// ka tcita
 /// ```
 /// ```glico
-/// The property of being|having a label
+/// The property of being|having a label.
+/// At the type level.
 /// ```
 pub trait Ka_tcita {
 	/// ```lojban

@@ -1,5 +1,6 @@
 use proc_macro2::TokenStream;
 use quote::quote;
+use syn::DeriveInput;
 
 #[derive(darling::FromMeta)]
 #[darling(derive_syn_parse)]
@@ -38,6 +39,25 @@ pub fn veciksi(
 	quote! {
 		#[doc = #lojban]
 		#[doc = #glico]
+		#item
+	}
+	.into()
+}
+
+#[proc_macro_attribute]
+pub fn tcita(
+	attr: proc_macro::TokenStream,
+	item: proc_macro::TokenStream,
+) -> proc_macro::TokenStream {
+	let item = syn::parse_macro_input!(item as DeriveInput);
+	let ident = &item.ident;
+
+	let params: syn::LitStr = syn::parse(attr).unwrap();
+
+	quote! {
+		impl ::ah_tcita::Ka_tcita for #ident {
+			const TI_SELTCITA_BAU_LA_LOJBAN: &str = #params;
+		}
 		#item
 	}
 	.into()
