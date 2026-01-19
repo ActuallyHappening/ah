@@ -6,6 +6,7 @@ resolver = "3"
 stodi = { path = "./crates/stodi" }
 ah-sets = { path = "./crates/sets"}
 ah-tcita = { path = "./crates/tcita"}
+ah-persistence = { path = "./crates/persistence"}
 
 [workspace.lints.rust]
 non_camel_case_types = "allow"

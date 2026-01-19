@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{prelude::*, sidbo::Sidbo};
 
 pub struct PersistenceEngineBuilder {
 	ns: String,
@@ -13,7 +13,9 @@ pub struct PersistenceEngine {
 }
 
 fn get_from_env(key: &str) -> Result<String, Error> {
-	std::env::var(key).map_err(|_| Error::MissingEnv { key: key.to_string() })
+	std::env::var(key).map_err(|_| Error::MissingEnv {
+		key: key.to_string(),
+	})
 }
 
 impl PersistenceEngineBuilder {
@@ -38,14 +40,15 @@ impl PersistenceEngineBuilder {
 			.await
 			.map_err(Error::UseNsDb)?;
 
-		conn.signin(surrealdb::opt::auth::Database {
-			namespace: &self.ns,
-			database: &self.db,
-			username: &self.user,
-			password: &self.pass,
-		})
-		.await
-		.map_err(Error::Signin)?;
+		conn
+			.signin(surrealdb::opt::auth::Database {
+				namespace: &self.ns,
+				database: &self.db,
+				username: &self.user,
+				password: &self.pass,
+			})
+			.await
+			.map_err(Error::Signin)?;
 
 		// TODO: Add .e check meta info of connection
 		// TODO: Implement caching for improved speed
@@ -54,5 +57,7 @@ impl PersistenceEngineBuilder {
 }
 
 impl PersistenceEngine {
-	pub fn
+	pub async fn add(obj: Sidbo) {
+		todo!()
+	}
 }

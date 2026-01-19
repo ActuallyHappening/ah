@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+ah-persistence.workspace = true
+ah-tcita.workspace = true
+time = "0.3.45"
 
 [lints]
 workspace = true
