@@ -10,10 +10,10 @@ use crate::valsi::{Cmavo, Valsi};
 // 	env!("CARGO_MANIFEST_DIR"),
 // 	"/../../downloads/dictionary-en.json"
 // ));
-const JBOVLASTE_GLICO_STR: &str = include_str!(concat!(
-	env!("CARGO_MANIFEST_DIR"),
-	"/../../downloads/dictionary-en.json"
-));
+// const JBOVLASTE_GLICO_STR: &str = include_str!(concat!(
+// 	env!("CARGO_MANIFEST_DIR"),
+// 	"/../../downloads/dictionary-en.json"
+// ));
 
 #[derive(Deserialize)]
 struct RawJbovlasteEntry {
@@ -81,10 +81,10 @@ pub struct Jbolvlaste_glico {
 }
 
 impl Jbolvlaste_glico {
-	pub fn from_embedded() -> color_eyre::Result<Self> {
-		let json: Vec<RawJbovlasteEntry> = serde_json::from_str(JBOVLASTE_GLICO_STR)
-			.wrap_err("Couldn't parse str into raw jbovvlaste entry")?;
-		// open downloads/dictionary-en.json | get word_type | uniq | count
-		let mut by_word_type = HashMap::with_capacity(14);
-	}
+	// pub fn from_embedded() -> color_eyre::Result<Self> {
+	// 	let json: Vec<RawJbovlasteEntry> = serde_json::from_str(JBOVLASTE_GLICO_STR)
+	// 		.wrap_err("Couldn't parse str into raw jbovvlaste entry")?;
+	// 	// open downloads/dictionary-en.json | get word_type | uniq | count
+	// 	let mut by_word_type = HashMap::with_capacity(14);
+	// }
 }

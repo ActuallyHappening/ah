@@ -1,4 +1,6 @@
-use ah_persistence::{PersistenceEngine, PersistenceEngineBuilder, sidbo::SidboTcita};
+use ah_persistence::{
+	PersistenceEngine, PersistenceEngineBuilder, SidboBuilder, sidbo::SidboTcita,
+};
 
 use crate::{
 	prelude::*, timetracker_ckaji::BillingCompanyCkaji, timetracker_sidbo::TimetrackerSidbo,
@@ -18,15 +20,53 @@ impl Timetracker {
 	}
 
 	pub async fn primary_sidbo(&self) -> Result<TimetrackerSidbo> {
-		todo!()
-		// self.persistence.select(TimetrackerSidbo::TCITA).await
+		self
+			.persistence
+			.select(SidboTcita::from_tcita::<TimetrackerSidbo>())
+			.await
+			.wrap_err("Couldn't get primary sidbo")
 	}
 
-	pub fn select_billing_company(&self, id: SidboTcita) -> Result<BillingCompanyCkaji> {
-		todo!()
+	pub async fn select_billing_company(&self, id: SidboTcita) -> Result<BillingCompanyCkaji> {
+		self
+			.persistence
+			.select(SidboTcita::from_tcita::<BillingCompanyCkaji>())
+			.await
+			.wrap_err("Couldn't get billing company")
 	}
 
-	// pub fn get_billing_companies(&self) -> Result<BillingCompanyCkaji> {
+	// pub fn get_billing_companies(&self) -> Result<HashSet<BillingCompanyCkaji>> {
 
 	// }
+}
+
+pub struct AddBillingCompany {
+	pub proper_name: String,
+	pub short_name: String,
+}
+
+impl AddBillingCompany {
+	pub fn tcita(&self) -> String {
+		format!(
+			"TODO ah-timetracker {} noi aka {}",
+			ah_lojban::quote(self.proper_name.as_str()),
+			ah_lojban::quote(self.short_name.as_str())
+		)
+	}
+}
+
+impl Timetracker {
+	pub async fn add_billing_company(
+		&self,
+		company: AddBillingCompany,
+	) -> Result<BillingCompanyCkaji> {
+		// TODO: check that no billing companies with identical proper_name or short_name's exist
+
+		let sidbo = SidboBuilder::new(company.tcita()).add_ckaji(BillingCompanyCkaji {
+			proper_name: company.proper_name,
+			short_name: company.short_name,
+		})?;
+		let mut sidbo = self.persistence.add(sidbo).await?;
+		sidbo.extract_ckaji().wrap_err("Ckaji didn't save?")
+	}
 }

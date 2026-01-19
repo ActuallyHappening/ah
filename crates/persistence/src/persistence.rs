@@ -1,5 +1,8 @@
-use ah_tcita::Ka_tcita;
-use serde::de::DeserializeOwned;
+use std::collections::HashMap;
+
+use ah_tcita::{Ka_tcita, veciksi};
+use serde::{Serialize, de::DeserializeOwned};
+use surrealdb::opt::IntoResource;
 
 use crate::{
 	prelude::*,
@@ -31,7 +34,7 @@ impl PersistenceEngineBuilder {
 			db: get_from_env("SURREAL_DATABASE")?,
 			url: Url::parse(&get_from_env("SURREAL_ENDPOINT")?).unwrap(),
 			user: get_from_env("SURREAL_USER")?,
-			pass: get_from_env("SURREAL_PASSWORD")?,
+			pass: get_from_env("SURREAL_PASS")?,
 		})
 	}
 
@@ -63,10 +66,6 @@ impl PersistenceEngineBuilder {
 }
 
 impl PersistenceEngine {
-	pub async fn add(obj: Sidbo) {
-		todo!()
-	}
-
 	pub async fn select<Sidbo>(&self, id: SidboTcita) -> Result<Sidbo>
 	where
 		Sidbo: DeserializeOwned + Ka_tcita,
@@ -82,5 +81,62 @@ impl PersistenceEngine {
 				})?
 				.ok_or(Error::SelectMissing { id })?,
 		)
+	}
+
+	// pub async fn select_by_ckaji(&self)
+}
+
+#[veciksi(lojban = "TODO builder", glico = "A builder to create a new Sidbo")]
+pub struct SidboBuilder {
+	pub name: String,
+	ckaji: HashMap<String, serde_json::Value>,
+}
+
+impl SidboBuilder {
+	pub fn new(name: String) -> Self {
+		SidboBuilder {
+			name,
+			ckaji: Default::default(),
+		}
+	}
+
+	pub fn add_ckaji<Ckaji>(mut self, ckaji: Ckaji) -> Result<Self>
+	where
+		Ckaji: Serialize + Ka_tcita,
+	{
+		self.ckaji.insert(
+			Ckaji::TCITA.to_owned(),
+			serde_json::to_value(ckaji).map_err(|err| Error::SerializingCkaji {
+				ckaji_id: Ckaji::TCITA.to_owned(),
+				err,
+			})?,
+		);
+		Ok(self)
+	}
+}
+
+#[derive(Serialize)]
+struct RawSidbo {
+	id: SidboTcita,
+	ckaji: HashMap<String, serde_json::Value>,
+}
+
+impl PersistenceEngine {
+	pub async fn add(&self, obj: SidboBuilder) -> Result<Sidbo> {
+		let id = SidboTcita::from_name(&obj.name);
+		let full_insert = RawSidbo {
+			id: id.clone(),
+			ckaji: obj.ckaji,
+		};
+		let ret: Option<Sidbo> = self
+			.conn
+			.insert((SidboTcita::TB, id.raw().key().clone()))
+			.content(full_insert)
+			.await
+			.map_err(|err| Error::Add {
+				id: id.clone(),
+				err,
+			})?;
+		Ok(ret.expect("A just inserted record to exist"))
 	}
 }

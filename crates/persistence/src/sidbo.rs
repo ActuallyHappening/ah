@@ -6,10 +6,10 @@ use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use crate::prelude::*;
 
 /// Object
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize)]
 pub struct Sidbo {
-	id: SidboTcita,
-	ckaji: HashMap<String, serde_json::Value>,
+	pub(crate) id: SidboTcita,
+	pub(crate) ckaji: HashMap<String, serde_json::Value>,
 }
 
 impl Sidbo {
@@ -47,6 +47,34 @@ impl Sidbo {
 /// We could use just RecordIdKey here, but then deserialization is harder for no significant reason
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
 pub struct SidboTcita(pub(crate) surrealdb::RecordId);
+
+impl SidboTcita {
+	pub(crate) const TB: &str = "sidbo";
+}
+
+impl SidboTcita {
+	pub fn from_tcita<T>() -> Self
+	where
+		T: Ka_tcita,
+	{
+		SidboTcita(surrealdb::RecordId::from_table_key(Self::TB, T::TCITA))
+	}
+
+	pub fn from_name(name: &str) -> Self {
+		SidboTcita(surrealdb::RecordId::from_table_key(Self::TB, name))
+	}
+
+	pub(crate) fn raw(&self) -> &surrealdb::RecordId {
+		&self.0
+	}
+}
+
+// impl<R> IntoResource<Option<R>> for &SidboTcita {
+// 	fn into_resource(self) -> Result<surrealdb::opt::Resource, surrealdb::Error> {
+// 		#[allow(deprecated)]
+// 		IntoResource::<Option<R>>::into_resource(self.0.clone())
+// 	}
+// }
 
 impl std::fmt::Display for SidboTcita {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

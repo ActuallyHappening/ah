@@ -109,6 +109,7 @@ dependencies = [
 name = "ah-timetracker"
 version = "0.1.0"
 dependencies = [
+ "ah-lojban",
  "ah-persistence",
  "ah-tcita",
  "clap",
