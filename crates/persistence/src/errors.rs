@@ -18,6 +18,14 @@ pub enum Error {
 	},
 	#[error("Expected data wasn't found: {id:?}")]
 	SelectMissing { id: SidboTcita },
+	#[error("Failed to select multiple sidbo tcita with ckaji tcita {ckaji_tcita}: {err}")]
+	SelectCkaji {
+		ckaji_tcita: String,
+		err: surrealdb::Error,
+	},
+
+	#[error("Failed to convert Sidbo from {id:?}: {err_debug}")]
+	SidboConversionFailed { id: SidboTcita, err_debug: String },
 
 	#[error("Failed to deserialize extracted {id} ckaji {ckaji_id}: {err}")]
 	ExtractCkajiDeserialize {

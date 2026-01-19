@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use ah_persistence::{
 	PersistenceEngine, PersistenceEngineBuilder, SidboBuilder, sidbo::SidboTcita,
 };
@@ -24,7 +26,7 @@ impl Timetracker {
 	pub async fn primary_sidbo(&self) -> Result<TimetrackerSidbo> {
 		self
 			.persistence
-			.select_sidbo(SidboTcita::from_tcita::<TimetrackerSidbo>())
+			.select_pasidbo(SidboTcita::from_tcita::<TimetrackerSidbo>())
 			.await
 			.wrap_err("Couldn't get primary sidbo")
 	}
@@ -32,14 +34,15 @@ impl Timetracker {
 	pub async fn select_billing_company(&self, id: SidboTcita) -> Result<BillingCompanyCkaji> {
 		self
 			.persistence
-			.select_sidbo(SidboTcita::from_tcita::<BillingCompanyCkaji>())
+			.select_pasidbo(SidboTcita::from_tcita::<BillingCompanyCkaji>())
 			.await
 			.wrap_err("Couldn't get billing company")
 	}
 
-	// pub fn get_billing_companies(&self) -> Result<HashSet<BillingCompanyCkaji>> {
-
-	// }
+	pub async fn get_billing_companies(&self) -> Result<HashSet<BillingCompanySidbo>> {
+		let ids = self.persistence.select_ckaji_sidbo::<BillingCompanyCkaji>().await?;
+			todo!()
+	}
 }
 
 #[derive(clap::Args)]
@@ -105,6 +108,7 @@ impl AddProject {
 impl Timetracker {
 	pub async fn add_project(&self, company: AddProject) -> Result<ProjectSidbo> {
 		// TODO: check for duplicates
+		let companies
 
 		let sidbo = SidboBuilder::new(company.tcita()).add_ckaji(ProjectCkaji {
 			billing_company: todo!(),

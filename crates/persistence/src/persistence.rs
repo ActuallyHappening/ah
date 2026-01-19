@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use ah_tcita::{Ka_tcita, veciksi};
 use serde::{Serialize, de::DeserializeOwned};
@@ -66,9 +66,23 @@ impl PersistenceEngineBuilder {
 }
 
 impl PersistenceEngine {
-	pub async fn select_sidbo<Sidbo>(&self, id: SidboTcita) -> Result<Sidbo>
+	pub async fn select_pasidbo_untyped(&self, id: SidboTcita) -> Result<Sidbo> {
+		Ok(
+			self
+				.conn
+				.select(&id.0)
+				.await
+				.map_err(|err| Error::SelectFailed {
+					id: id.clone(),
+					err,
+				})?
+				.ok_or(Error::SelectMissing { id })?,
+		)
+	}
+
+	pub async fn select_pasidbo<Sidbo>(&self, id: SidboTcita) -> Result<Sidbo>
 	where
-		Sidbo: DeserializeOwned + Ka_tcita,
+		Sidbo: DeserializeOwned,
 	{
 		Ok(
 			self
@@ -83,9 +97,49 @@ impl PersistenceEngine {
 		)
 	}
 
-	// pub async fn select_packaji_sidbo<Ckaji>(&self) -> PaCkajiSidbo<Ckaji> {
-	// 	self.conn.query("SELECT * FROM sidbo WHERE ckaji")
-	// }
+	/// No order guarenteed
+	pub async fn select_sidbo<TSidbo>(
+		&self,
+		ids: impl IntoIterator<Item = SidboTcita>,
+	) -> Result<HashSet<crate::sidbo::Sidbo>>
+	where
+		TSidbo: TryFrom<crate::sidbo::Sidbo>,
+		<TSidbo as TryFrom<crate::sidbo::Sidbo>>::Error: std::fmt::Debug,
+	{
+		let mut map = HashSet::new();
+		for id in ids {
+			map.insert(self.select_pasidbo_untyped(id).await?);
+		}
+		let map = map.into_iter().map(|sidbo| {
+			let id = sidbo.get_id().clone();
+			crate::sidbo::Sidbo::try_from(sidbo).map_err(|err| Error::SidboConversionFailed {
+				id,
+				err_debug: format!("{:?}", err),
+			})
+		});
+		let map = map.collect::<Result<HashSet<_>>>()?;
+		Ok(map)
+	}
+
+	pub async fn select_ckaji_sidbo<Ckaji>(&self) -> Result<HashSet<SidboTcita>>
+	where
+		Ckaji: Ka_tcita,
+	{
+		let mut resp = self
+			.conn
+			.query("SELECT id FROM sidbo WHERE ckaji.keys().matches($ckaji_tcita).any()")
+			.bind(("ckaji_tcita", Ckaji::TCITA))
+			.await
+			.map_err(|err| Error::SelectCkaji {
+				ckaji_tcita: Ckaji::TCITA.to_owned(),
+				err,
+			})?;
+		let resp: Vec<SidboTcita> = resp.take(0).map_err(|err| Error::SelectCkaji {
+			ckaji_tcita: Ckaji::TCITA.to_owned(),
+			err,
+		})?;
+		Ok(resp.into_iter().collect())
+	}
 }
 
 #[veciksi(lojban = "TODO builder", glico = "A builder to create a new Sidbo")]

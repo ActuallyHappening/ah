@@ -1,15 +1,27 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, hash::Hash};
 
 use ah_tcita::Ka_tcita;
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
 use crate::prelude::*;
 
-/// Object
-#[derive(Debug, Deserialize)]
+/// [PartialEq] .e [Eq] use only the [Sidbo.id] for identity
+#[derive(Debug, Deserialize, Eq)]
 pub struct Sidbo {
 	pub(crate) id: SidboTcita,
 	pub(crate) ckaji: HashMap<String, serde_json::Value>,
+}
+
+impl PartialEq for Sidbo {
+	fn eq(&self, other: &Self) -> bool {
+		self.id.eq(&other.id)
+	}
+}
+
+impl Hash for Sidbo {
+	fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+		self.id.hash(state);
+	}
 }
 
 impl Sidbo {
