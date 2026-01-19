@@ -2,6 +2,7 @@
 
 !crates
 !sazycimde
+!env.nu
 
 !.gitignore
 !Cargo.toml

@@ -1,4 +1,10 @@
-use crate::{prelude::*, sidbo::Sidbo};
+use ah_tcita::Ka_tcita;
+use serde::de::DeserializeOwned;
+
+use crate::{
+	prelude::*,
+	sidbo::{Sidbo, SidboTcita},
+};
 
 pub struct PersistenceEngineBuilder {
 	ns: String,
@@ -59,5 +65,22 @@ impl PersistenceEngineBuilder {
 impl PersistenceEngine {
 	pub async fn add(obj: Sidbo) {
 		todo!()
+	}
+
+	pub async fn select<Ka>(&self, id: SidboTcita) -> Result<Ka>
+	where
+		Ka: DeserializeOwned + Ka_tcita,
+	{
+		Ok(
+			self
+				.conn
+				.select(&id.0)
+				.await
+				.map_err(|err| Error::SelectFailed {
+					id: id.clone(),
+					err,
+				})?
+				.ok_or(Error::SelectMissing { id })?,
+		)
 	}
 }

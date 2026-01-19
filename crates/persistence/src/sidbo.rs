@@ -11,5 +11,5 @@ pub struct Sidbo {
 
 /// Don't optimize for space. Optimize for simplicity.
 /// We could use just RecordIdKey here, but then deserialization is harder for no significant reason
-#[derive(Debug, Deserialize, Serialize, PartialEq, Eq, Hash)]
-pub struct SidboTcita(surrealdb::RecordId);
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
+pub struct SidboTcita(pub(crate) surrealdb::RecordId);
