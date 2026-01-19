@@ -1,0 +1,12 @@
+[package]
+name = "ah-persistence"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+surrealdb = "2.4.1"
+tracing = "0.1.44"
+url = "2.5.8"
+
+[lints]
+workspace = true
