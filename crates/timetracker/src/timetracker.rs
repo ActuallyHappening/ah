@@ -24,7 +24,7 @@ impl Timetracker {
 	pub async fn primary_sidbo(&self) -> Result<TimetrackerSidbo> {
 		self
 			.persistence
-			.select(SidboTcita::from_tcita::<TimetrackerSidbo>())
+			.select_sidbo(SidboTcita::from_tcita::<TimetrackerSidbo>())
 			.await
 			.wrap_err("Couldn't get primary sidbo")
 	}
@@ -32,7 +32,7 @@ impl Timetracker {
 	pub async fn select_billing_company(&self, id: SidboTcita) -> Result<BillingCompanyCkaji> {
 		self
 			.persistence
-			.select(SidboTcita::from_tcita::<BillingCompanyCkaji>())
+			.select_sidbo(SidboTcita::from_tcita::<BillingCompanyCkaji>())
 			.await
 			.wrap_err("Couldn't get billing company")
 	}

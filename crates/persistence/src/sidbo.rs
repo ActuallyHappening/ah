@@ -43,6 +43,37 @@ impl Sidbo {
 	}
 }
 
+#[veciksi(
+	lojban = "TODO le packaji sidbo",
+	glico = "A generic sidbo with only pa (one) ckaji (property) for type convenience"
+)]
+#[macro_export]
+macro_rules! packaji_sidbo {
+	($vis:vis struct $ident:ident { ckaji: $ckaji:ty, ... }) => {
+		#[derive(Debug, Deserialize)]
+		#[serde(try_from = "Sidbo")]
+		$vis struct $ident {
+			ckaji: $ckaji,
+			id: SidboTcita,
+		}
+
+		impl TryFrom<Sidbo> for $ident
+		where
+			$ckaji: DeserializeOwned + Ka_tcita,
+		{
+			type Error = Error;
+
+			fn try_from(mut sidbo: Sidbo) -> Result<Self, Self::Error> {
+				let ckaji = sidbo.extract_ckaji::<$ckaji>()?;
+				let id = sidbo.id();
+				Ok(Self { id, ckaji })
+			}
+		}
+	};
+}
+
+pub use packaji_sidbo;
+
 /// Don't optimize for space. Optimize for simplicity.
 /// We could use just RecordIdKey here, but then deserialization is harder for no significant reason
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]

@@ -66,7 +66,7 @@ impl PersistenceEngineBuilder {
 }
 
 impl PersistenceEngine {
-	pub async fn select<Sidbo>(&self, id: SidboTcita) -> Result<Sidbo>
+	pub async fn select_sidbo<Sidbo>(&self, id: SidboTcita) -> Result<Sidbo>
 	where
 		Sidbo: DeserializeOwned + Ka_tcita,
 	{
@@ -83,7 +83,9 @@ impl PersistenceEngine {
 		)
 	}
 
-	// pub async fn select_by_ckaji(&self)
+	// pub async fn select_packaji_sidbo<Ckaji>(&self) -> PaCkajiSidbo<Ckaji> {
+	// 	self.conn.query("SELECT * FROM sidbo WHERE ckaji")
+	// }
 }
 
 #[veciksi(lojban = "TODO builder", glico = "A builder to create a new Sidbo")]

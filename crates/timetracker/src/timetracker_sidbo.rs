@@ -1,4 +1,7 @@
-use ah_persistence::sidbo::{Sidbo, SidboTcita};
+use ah_persistence::{
+	packaji_sidbo,
+	sidbo::{Sidbo, SidboTcita},
+};
 use serde::de::DeserializeOwned;
 
 use crate::{
@@ -33,31 +36,18 @@ impl TryFrom<Sidbo> for TimetrackerSidbo {
 	}
 }
 
-#[derive(Debug)]
-pub struct PaCkajiSidbo<Ckaji> {
-	id: SidboTcita,
-	ckaji: Ckaji,
-}
-
-impl<Ckaji> TryFrom<Sidbo> for PaCkajiSidbo<Ckaji>
-where
-	Ckaji: DeserializeOwned + Ka_tcita,
-{
-	type Error = Error;
-
-	fn try_from(mut sidbo: Sidbo) -> Result<Self, Self::Error> {
-		let ckaji = sidbo.extract_ckaji::<Ckaji>()?;
-		let id = sidbo.id();
-		Ok(Self { id, ckaji })
-	}
-}
-
-pub type ProjectSidbo = PaCkajiSidbo<ProjectCkaji>;
+packaji_sidbo!(pub struct ProjectSidbo {
+	ckaji: ProjectCkaji,
+	...
+});
 impl Ka_tcita for ProjectSidbo {
 	const TI_SELTCITA_BAU_LA_LOJBAN: &str = "TODO ah-timetracker ckaji project";
 }
 
-pub type BillingCompanySidbo = PaCkajiSidbo<BillingCompanyCkaji>;
+packaji_sidbo!(pub struct BillingCompanySidbo {
+	ckaji: BillingCompanyCkaji,
+	...
+});
 impl Ka_tcita for BillingCompanySidbo {
 	const TI_SELTCITA_BAU_LA_LOJBAN: &str = "TODO ah-timetracker ckaji billing company";
 }
