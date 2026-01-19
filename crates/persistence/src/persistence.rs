@@ -67,9 +67,9 @@ impl PersistenceEngine {
 		todo!()
 	}
 
-	pub async fn select<Ka>(&self, id: SidboTcita) -> Result<Ka>
+	pub async fn select<Sidbo>(&self, id: SidboTcita) -> Result<Sidbo>
 	where
-		Ka: DeserializeOwned + Ka_tcita,
+		Sidbo: DeserializeOwned + Ka_tcita,
 	{
 		Ok(
 			self
