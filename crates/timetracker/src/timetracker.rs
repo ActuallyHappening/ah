@@ -3,7 +3,9 @@ use ah_persistence::{
 };
 
 use crate::{
-	prelude::*, timetracker_ckaji::BillingCompanyCkaji, timetracker_sidbo::TimetrackerSidbo,
+	prelude::*,
+	timetracker_ckaji::{BillingCompanyCkaji, ProjectCkaji},
+	timetracker_sidbo::{BillingCompanySidbo, ProjectSidbo, TimetrackerSidbo},
 };
 
 pub struct Timetracker {
@@ -53,7 +55,7 @@ impl AddBillingCompany {
 	/// time stodi
 	pub fn tcita(&self) -> String {
 		format!(
-			"TODO ah-timetracker {} noi aka {}",
+			"TODO ah-timetracker billing company {} noi aka {}",
 			ah_lojban::quote(self.proper_name.as_str()),
 			ah_lojban::quote(self.short_name.as_str())
 		)
@@ -64,7 +66,7 @@ impl Timetracker {
 	pub async fn add_billing_company(
 		&self,
 		company: AddBillingCompany,
-	) -> Result<BillingCompanyCkaji> {
+	) -> Result<BillingCompanySidbo> {
 		// TODO: check that no billing companies with identical proper_name or short_name's exist
 
 		let sidbo = SidboBuilder::new(company.tcita()).add_ckaji(BillingCompanyCkaji {
@@ -72,14 +74,44 @@ impl Timetracker {
 			short_name: company.short_name,
 		})?;
 		let mut sidbo = self.persistence.add(sidbo).await?;
-		sidbo.extract_ckaji().wrap_err("Ckaji didn't save?")
+		BillingCompanySidbo::try_from(sidbo)
 	}
 }
 
+#[derive(clap::Args)]
 pub struct AddProject {
+	/// Long name here
+	#[arg(long)]
+	pub billing_company: String,
+
 	/// You must spell this exactly, then subsequent references to it are from short
 	#[arg(long)]
 	pub proper_name: String,
 	#[arg(long)]
 	pub short_name: String,
+}
+
+impl AddProject {
+	/// time stodi
+	pub fn tcita(&self) -> String {
+		format!(
+			"TODO ah-timetracker project {} noi aka {}",
+			ah_lojban::quote(self.proper_name.as_str()),
+			ah_lojban::quote(self.short_name.as_str())
+		)
+	}
+}
+
+impl Timetracker {
+	pub async fn add_project(&self, company: AddProject) -> Result<ProjectSidbo> {
+		// TODO: check for duplicates
+
+		let sidbo = SidboBuilder::new(company.tcita()).add_ckaji(ProjectCkaji {
+			billing_company: todo!(),
+			proper_name: company.proper_name,
+			short_name: company.short_name,
+		})?;
+		let mut sidbo = self.persistence.add(sidbo).await?;
+		ProjectSidbo::try_from(sidbo)
+	}
 }

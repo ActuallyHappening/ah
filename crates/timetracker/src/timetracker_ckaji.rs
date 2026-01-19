@@ -48,6 +48,7 @@ pub struct BillingCompanyCkaji {
 #[tcita("TODO ah-timetracker su'u project")]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ProjectCkaji {
-	pub(crate) proper_name: String,
 	pub(crate) billing_company: SidboTcita,
+	pub(crate) proper_name: String,
+	pub(crate) short_name: String,
 }
