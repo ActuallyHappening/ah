@@ -40,12 +40,17 @@ impl Timetracker {
 	// }
 }
 
+#[derive(clap::Args)]
 pub struct AddBillingCompany {
+	/// You must spell this exactly, then subsequent references to it are from short
+	#[arg(long)]
 	pub proper_name: String,
+	#[arg(long)]
 	pub short_name: String,
 }
 
 impl AddBillingCompany {
+	/// time stodi
 	pub fn tcita(&self) -> String {
 		format!(
 			"TODO ah-timetracker {} noi aka {}",
@@ -69,4 +74,12 @@ impl Timetracker {
 		let mut sidbo = self.persistence.add(sidbo).await?;
 		sidbo.extract_ckaji().wrap_err("Ckaji didn't save?")
 	}
+}
+
+pub struct AddProject {
+	/// You must spell this exactly, then subsequent references to it are from short
+	#[arg(long)]
+	pub proper_name: String,
+	#[arg(long)]
+	pub short_name: String,
 }

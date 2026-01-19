@@ -1,15 +1,25 @@
-use ah_timetracker::{cli::Cli, timetracker::Timetracker};
+use ah_timetracker::{
+	cli::{Cli, SubCommands},
+	timetracker::Timetracker,
+};
 use clap::Parser as _;
-use tracing::debug;
+use tracing::{debug, info};
 
 #[tokio::main]
 async fn main() -> color_eyre::Result<()> {
 	ah_timetracker::app_tracing::init_debug_tools("info,ah_timetracker=debug")?;
-	// let cli = Cli::parse();
+	let cli = Cli::parse();
 
 	let timetracker = Timetracker::new().await?;
 	let primary = timetracker.primary_sidbo().await?;
 	debug!("Primary state: {:?}", primary);
 
-	todo!()
+	match cli.cmd {
+		SubCommands::Add(company) => {
+			let company = timetracker.add_billing_company(company).await?;
+			info!("Added billing company: {:?}", company);
+			Ok(())
+		}
+		_ => todo!(),
+	}
 }

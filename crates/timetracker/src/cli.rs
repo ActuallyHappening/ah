@@ -1,5 +1,7 @@
 use clap::{Parser, Subcommand};
 
+use crate::timetracker::AddBillingCompany;
+
 #[derive(Parser)]
 #[command(name = "tt")]
 #[command(bin_name = "tt")]
@@ -14,13 +16,7 @@ pub enum SubCommands {
 	/// Used in my [starship](https://starship.rs/) config
 	ShortStatus,
 	/// Adds a new billing company
-	Add {
-		/// You must spell this exactly, then subsequent references to it are from short
-		#[arg(long)]
-		proper_name: String,
-		#[arg(long)]
-		short_name: String,
-	},
+	Add(AddBillingCompany),
 	/// Use like `tt start - -` for repeat
 	Start {
 		#[arg(short = 'b')]
