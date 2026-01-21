@@ -1,3 +1,5 @@
+use std::process;
+
 use ah_timetracker::{
 	cli::{Cli, SubCommands},
 	timetracker::{
@@ -8,7 +10,8 @@ use ah_timetracker::{
 use clap::Parser as _;
 use color_eyre::eyre::eyre;
 use time::UtcDateTime;
-use tracing::{debug, info};
+#[allow(unused_imports)]
+use tracing::{debug, error, info, trace, warn};
 
 #[tokio::main]
 async fn main() -> color_eyre::Result<()> {
@@ -16,8 +19,6 @@ async fn main() -> color_eyre::Result<()> {
 	let cli = Cli::parse();
 
 	let timetracker = Timetracker::new().await?;
-	let primary = timetracker.primary_sidbo().await?;
-	debug!("Primary state: {:?}", primary);
 
 	match cli.cmd {
 		SubCommands::Add(company) => {
@@ -62,7 +63,6 @@ async fn main() -> color_eyre::Result<()> {
 			Ok(())
 		}
 		SubCommands::Stop => {
-			// find open span
 			let spans = timetracker.get_spans().await?;
 			let resolved = spans.resolve()?;
 			for (company, project, state) in resolved.iter() {
@@ -80,6 +80,30 @@ async fn main() -> color_eyre::Result<()> {
 
 			Ok(())
 		}
-		_ => todo!(),
+		SubCommands::Topic => {
+			let spans = timetracker.get_spans().await?;
+			let resolved = spans.resolve()?;
+			let mut open = vec![];
+			for (company, project, state) in resolved.iter() {
+				if let Some(_open) = state.open() {
+					open.push((company, project, state));
+				}
+			}
+			let mut output = vec![];
+
+			for (_c, p, _s) in open {
+				let project = timetracker.get_project(p.clone()).await?;
+				output.push(format!("{}", project.ckaji().display_name()));
+			}
+
+			if output.is_empty() {
+				error!("No open topics");
+				process::exit(1);
+			} else {
+				let output = output.join(", ");
+				println!("{}", output);
+				Ok(())
+			}
+		}
 	}
 }

@@ -1,3 +1,5 @@
+#![allow(dead_code, unused_imports, non_camel_case_types)]
+
 pub mod siho_selylehu;
 
 pub mod jbovlaste;

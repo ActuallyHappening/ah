@@ -1,4 +1,4 @@
-use ah_persistence::{PersistenceEngine, SidboBuilder, packaji_sidbo, sidbo::SidboTcita};
+use ah_persistence::{SidboBuilder, packaji_sidbo, sidbo::SidboTcita};
 
 use crate::{prelude::*, timetracker::Timetracker};
 
@@ -107,7 +107,7 @@ pub mod processing {
 		prelude::*,
 		timetracker::{
 			Timetracker,
-			span::{FasnuCkaji, SpanFasnuSidbo, Start, Stop, StopBuilder},
+			span::{FasnuCkaji, SpanFasnuSidbo, Start, Stop},
 		},
 	};
 
@@ -133,6 +133,7 @@ pub mod processing {
 		}
 	}
 
+	#[allow(dead_code)]
 	impl<T> WithSidboTcita<&T>
 	where
 		T: Clone,

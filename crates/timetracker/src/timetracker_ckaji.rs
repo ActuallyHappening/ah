@@ -2,22 +2,6 @@ use ah_persistence::sidbo::SidboTcita;
 
 use crate::prelude::*;
 
-/// State about the timetracker itself
-#[derive(Debug, Deserialize, Serialize)]
-#[veciksi(
-	lojban = "TODO ah-timetracker su'u internal state",
-	glico = "Timetracker internal state abstraction"
-)]
-#[tcita("TODO ah-timetracker su'u internal state")]
-pub struct TimetrackerCkaji {
-	pub(crate) active: Option<Active>,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-struct Active {
-	start: UtcDateTime,
-}
-
 #[veciksi(
 	lojban = "TODO ah-timetracker su'u billing company",
 	glico = "Billing Company abstraction"
@@ -50,5 +34,9 @@ pub struct ProjectCkaji {
 impl ProjectCkaji {
 	pub fn match_short_name(&self, short_name: &str) -> bool {
 		self.short_name == short_name
+	}
+
+	pub fn display_name(&self) -> String {
+		self.proper_name.clone()
 	}
 }

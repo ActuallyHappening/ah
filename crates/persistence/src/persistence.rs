@@ -2,7 +2,6 @@ use std::collections::{HashMap, HashSet};
 
 use ah_tcita::{Ka_tcita, veciksi};
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
-use surrealdb::opt::IntoResource;
 
 use crate::{
 	prelude::*,

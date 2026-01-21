@@ -1,16 +1,13 @@
-use std::collections::HashSet;
-
 use ah_persistence::{
 	PersistenceEngine, PersistenceEngineBuilder, SidboBuilder, sidbo::SidboTcita,
 };
-use color_eyre::eyre;
 
 pub mod span;
 
 use crate::{
 	prelude::*,
 	timetracker_ckaji::{BillingCompanyCkaji, ProjectCkaji},
-	timetracker_sidbo::{BillingCompanySidbo, ProjectSidbo, TimetrackerSidbo},
+	timetracker_sidbo::{BillingCompanySidbo, ProjectSidbo},
 };
 
 pub struct Timetracker {
@@ -24,14 +21,6 @@ impl Timetracker {
 			.connect()
 			.await?;
 		Ok(Self { persistence })
-	}
-
-	pub async fn primary_sidbo(&self) -> Result<TimetrackerSidbo> {
-		self
-			.persistence
-			.select_pasidbo(SidboTcita::from_tcita::<TimetrackerSidbo>())
-			.await
-			.wrap_err("Couldn't get primary sidbo")
 	}
 }
 
@@ -47,7 +36,7 @@ mod billing_companies {
 		pub async fn select_billing_company(&self, id: SidboTcita) -> Result<BillingCompanyCkaji> {
 			self
 				.persistence
-				.select_pasidbo(SidboTcita::from_tcita::<BillingCompanyCkaji>())
+				.select_pasidbo(id)
 				.await
 				.wrap_err("Couldn't get billing company")
 		}
@@ -64,12 +53,22 @@ mod billing_companies {
 }
 
 mod projects {
+	use ah_persistence::sidbo::SidboTcita;
+
 	use crate::{
 		prelude::*, timetracker::Timetracker, timetracker_ckaji::ProjectCkaji,
 		timetracker_sidbo::ProjectSidbo,
 	};
 
 	impl Timetracker {
+		pub async fn get_project(&self, id: SidboTcita) -> Result<ProjectSidbo> {
+			self
+				.persistence
+				.select_pasidbo(id)
+				.await
+				.wrap_err("Couldn't get project")
+		}
+
 		pub async fn get_projects(&self) -> Result<Vec<ProjectSidbo>> {
 			let ids = self
 				.persistence

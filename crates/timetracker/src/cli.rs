@@ -12,9 +12,6 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum SubCommands {
-	Status,
-	/// Used in my [starship](https://starship.rs/) config
-	ShortStatus,
 	/// Adds a new billing company
 	Add(AddBillingCompany),
 	/// Adds a new project
@@ -27,7 +24,7 @@ pub enum SubCommands {
 		project_short: String,
 	},
 	Stop,
-	/// Retrieves the active sub_description.
-	/// This is useful for scripting
+	/// Retrieves the active project proper name.
+	/// Used in starship config.
 	Topic,
 }
