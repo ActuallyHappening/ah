@@ -64,13 +64,16 @@ mod billing_companies {
 }
 
 mod projects {
-	use crate::{prelude::*, timetracker::Timetracker, timetracker_sidbo::ProjectSidbo};
+	use crate::{
+		prelude::*, timetracker::Timetracker, timetracker_ckaji::ProjectCkaji,
+		timetracker_sidbo::ProjectSidbo,
+	};
 
 	impl Timetracker {
 		pub async fn get_projects(&self) -> Result<Vec<ProjectSidbo>> {
 			let ids = self
 				.persistence
-				.select_ckaji_sidbo::<ProjectSidbo>()
+				.select_ckaji_sidbo::<ProjectCkaji>()
 				.await?;
 			let projects = self.persistence.select_sidbo(ids).await?;
 			Ok(projects)

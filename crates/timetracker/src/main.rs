@@ -55,7 +55,8 @@ async fn main() -> color_eyre::Result<()> {
 				billing_company: company.tcita(),
 			};
 			timetracker.start(start).await?;
-			todo!()
+
+			Ok(())
 		}
 		_ => todo!(),
 	}
