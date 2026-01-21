@@ -87,6 +87,10 @@ macro_rules! packaji_sidbo {
 				&self.ckaji
 			}
 
+			pub fn into_ckaji(self) -> $ckaji {
+				self.ckaji
+			}
+
 			pub fn tcita(&self) -> SidboTcita {
 				self.id.clone()
 			}

@@ -30,7 +30,7 @@ pub enum FasnuCkaji {
 	Stop(Stop),
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Start {
 	#[serde(with = "time::serde::iso8601")]
 	start: time::OffsetDateTime,
@@ -38,7 +38,7 @@ pub struct Start {
 	billing_company: SidboTcita,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Stop {
 	#[serde(with = "time::serde::iso8601")]
 	stop: time::OffsetDateTime,
@@ -111,6 +111,40 @@ pub mod processing {
 		},
 	};
 
+	pub struct WithSidboTcita<T> {
+		inner: T,
+		tcita: SidboTcita,
+	}
+
+	impl<T> WithSidboTcita<T> {
+		pub fn inner(&self) -> &T {
+			&self.inner
+		}
+
+		pub fn tcita(&self) -> SidboTcita {
+			self.tcita.clone()
+		}
+
+		pub fn as_ref(&self) -> WithSidboTcita<&T> {
+			WithSidboTcita {
+				inner: &self.inner,
+				tcita: self.tcita.clone(),
+			}
+		}
+	}
+
+	impl<T> WithSidboTcita<&T>
+	where
+		T: Clone,
+	{
+		fn clone_inner(self) -> WithSidboTcita<T> {
+			WithSidboTcita {
+				inner: self.inner.clone(),
+				tcita: self.tcita.clone(),
+			}
+		}
+	}
+
 	impl Timetracker {
 		async fn get_spans_raw(&self) -> Result<Vec<SpanFasnuSidbo>> {
 			let ids = self.persistence.select_ckaji_sidbo::<FasnuCkaji>().await?;
@@ -139,29 +173,31 @@ pub mod processing {
 		open: Option<OpenSpan>,
 	}
 
-	pub struct ClosedSpan {
-		pub(crate) start: Start,
-		pub(crate) start_id: SidboTcita,
-		pub(crate) stop: Stop,
-		pub(crate) stop_id: SidboTcita,
-	}
-
-	pub struct OpenSpan {
-		pub(crate) start: Start,
-		pub(crate) start_id: SidboTcita,
-	}
+	type ClosedSpan = (WithSidboTcita<Start>, WithSidboTcita<Stop>);
+	type OpenSpan = WithSidboTcita<Start>;
 
 	impl UnderstandSpanState {
 		pub fn resolve(self) -> Result<ResolvedSpanState> {
 			let mut ret = ResolvedSpanState::default();
 			for span in self.full {
-				match span.ckaji() {
+				let tcita = span.tcita();
+				match span.into_ckaji() {
 					FasnuCkaji::Start(start) => {
 						ret
-							.get(&start.billing_company, &start.project)
-							.start(start)?;
+							.get_mut(&start.billing_company, &start.project)
+							.start(WithSidboTcita {
+								inner: start,
+								tcita: tcita,
+							})?;
 					}
-					FasnuCkaji::Stop(stop) => {}
+					FasnuCkaji::Stop(stop) => {
+						ret
+							.get_mut(&stop.billing_company, &stop.project)
+							.stop(WithSidboTcita {
+								inner: stop,
+								tcita: tcita,
+							})?;
+					}
 				}
 			}
 			Ok(ret)
@@ -169,23 +205,52 @@ pub mod processing {
 	}
 
 	impl SpansState {
-		fn start(&mut self, start: &Start) -> Result<()> {
-			todo!()
+		fn start(&mut self, start: WithSidboTcita<Start>) -> Result<()> {
+			if self.open.is_some() {
+				bail!("Cannot start a project that is already being worked on");
+			} else {
+				self.open = Some(start);
+			}
+			Ok(())
 		}
 
-		fn stop(&mut self, stop: &Stop) -> Result<()> {
-			todo!()
+		fn stop(&mut self, stop: WithSidboTcita<Stop>) -> Result<()> {
+			if let Some(open) = self.open.take() {
+				self.history.push((open, stop));
+				self.open = None;
+				Ok(())
+			} else {
+				bail!("Cannot stop a project that is not being worked on");
+			}
 		}
 	}
 
 	impl ResolvedSpanState {
-		fn get(&mut self, company: &SidboTcita, project: &SidboTcita) -> &mut SpansState {
+		fn get_mut(&mut self, company: &SidboTcita, project: &SidboTcita) -> &mut SpansState {
 			self
 				.inner
 				.entry(company.clone())
 				.or_default()
 				.entry(project.clone())
 				.or_default()
+		}
+
+		pub fn get(&self, company: &SidboTcita, project: &SidboTcita) -> Option<&SpansState> {
+			self.inner.get(company)?.get(project)
+		}
+
+		pub fn iter(&self) -> impl Iterator<Item = (&SidboTcita, &SidboTcita, &SpansState)> {
+			self.inner.iter().flat_map(|(company, projects)| {
+				projects
+					.iter()
+					.map(move |(project, state)| (company, project, state))
+			})
+		}
+	}
+
+	impl SpansState {
+		pub fn open(&self) -> Option<WithSidboTcita<&Start>> {
+			self.open.as_ref().map(|open| open.as_ref())
 		}
 	}
 }

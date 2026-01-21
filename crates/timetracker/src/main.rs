@@ -1,6 +1,9 @@
 use ah_timetracker::{
 	cli::{Cli, SubCommands},
-	timetracker::{CliAddProject, Timetracker, span::StartBuilder},
+	timetracker::{
+		CliAddProject, Timetracker,
+		span::{StartBuilder, StopBuilder},
+	},
 };
 use clap::Parser as _;
 use color_eyre::eyre::eyre;
@@ -55,6 +58,25 @@ async fn main() -> color_eyre::Result<()> {
 				billing_company: company.tcita(),
 			};
 			timetracker.start(start).await?;
+
+			Ok(())
+		}
+		SubCommands::Stop => {
+			// find open span
+			let spans = timetracker.get_spans().await?;
+			let resolved = spans.resolve()?;
+			for (company, project, state) in resolved.iter() {
+				if let Some(_open) = state.open() {
+					// stop this
+					timetracker
+						.stop(StopBuilder {
+							stop: UtcDateTime::now(),
+							billing_company: company.clone(),
+							project: project.clone(),
+						})
+						.await?;
+				}
+			}
 
 			Ok(())
 		}
