@@ -30,6 +30,15 @@ pub enum FasnuCkaji {
 	Stop(Stop),
 }
 
+impl FasnuCkaji {
+	pub fn time(&self) -> time::UtcDateTime {
+		match self {
+			FasnuCkaji::Start(start) => start.start.into(),
+			FasnuCkaji::Stop(stop) => stop.stop.into(),
+		}
+	}
+}
+
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Start {
 	#[serde(with = "time::serde::iso8601")]
@@ -153,8 +162,10 @@ pub mod processing {
 			Ok(spans)
 		}
 
+		/// Automatically sorts
 		pub async fn get_spans(&self) -> Result<UnderstandSpanState> {
-			let full = self.get_spans_raw().await?;
+			let mut full = self.get_spans_raw().await?;
+			full.sort_by(|a, b| a.ckaji().time().cmp(&b.ckaji().time()));
 			Ok(UnderstandSpanState { full })
 		}
 	}
