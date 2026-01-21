@@ -5,6 +5,8 @@ use ah_persistence::{
 };
 use color_eyre::eyre;
 
+pub mod span;
+
 use crate::{
 	prelude::*,
 	timetracker_ckaji::{BillingCompanyCkaji, ProjectCkaji},
@@ -116,7 +118,7 @@ impl Timetracker {
 		let bcompany = companies
 			.into_iter()
 			.find(|c| c.ckaji().proper_name == company.proper_name);
-		let company = bcompany.ok_or(eyre!(
+		let company2 = bcompany.ok_or(eyre!(
 			"No company with proper name {} found",
 			company.proper_name
 		))?;
@@ -124,11 +126,11 @@ impl Timetracker {
 		// TODO: check for duplicates
 
 		let sidbo = SidboBuilder::new(company.tcita()).add_ckaji(ProjectCkaji {
-			billing_company: company.id,
-			proper_name: company.proper_name,
-			short_name: company.short_name,
+			billing_company: company2.tcita(),
+			proper_name: company2.ckaji().proper_name.clone(),
+			short_name: company2.ckaji().short_name.clone(),
 		})?;
-		let mut sidbo = self.persistence.add(sidbo).await?;
+		let sidbo = self.persistence.add(sidbo).await?;
 		ProjectSidbo::try_from(sidbo)
 	}
 }

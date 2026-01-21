@@ -73,6 +73,7 @@ dependencies = [
  "serde_json",
  "surrealdb",
  "thiserror 2.0.18",
+ "time",
  "tracing",
  "url",
 ]
@@ -114,12 +115,14 @@ dependencies = [
  "ah-tcita",
  "clap",
  "color-eyre",
+ "rand 0.9.2",
  "serde",
  "time",
  "tokio",
  "tracing",
  "tracing-error",
  "tracing-subscriber",
+ "uuid",
 ]
 
 [[package]]

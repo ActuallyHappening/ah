@@ -63,19 +63,19 @@ impl Sidbo {
 macro_rules! packaji_sidbo {
 	($vis:vis struct $ident:ident { ckaji: $ckaji:ty, ... }) => {
 		#[derive(Debug, Deserialize)]
-		#[serde(try_from = "Sidbo")]
+		#[serde(try_from = "::ah_persistence::sidbo::Sidbo")]
 		$vis struct $ident {
 			ckaji: $ckaji,
 			id: SidboTcita,
 		}
 
-		impl TryFrom<Sidbo> for $ident
+		impl TryFrom<::ah_persistence::sidbo::Sidbo> for $ident
 		where
-			$ckaji: DeserializeOwned + Ka_tcita,
+			$ckaji: ::serde::de::DeserializeOwned + Ka_tcita,
 		{
 			type Error = Error;
 
-			fn try_from(mut sidbo: Sidbo) -> Result<Self, Self::Error> {
+			fn try_from(mut sidbo: ::ah_persistence::sidbo::Sidbo) -> Result<Self, Self::Error> {
 				let ckaji = sidbo.extract_ckaji::<$ckaji>()?;
 				let id = sidbo.id();
 				Ok(Self { id, ckaji })
@@ -85,6 +85,10 @@ macro_rules! packaji_sidbo {
 		impl $ident {
 			pub fn ckaji(&self) -> &$ckaji {
 				&self.ckaji
+			}
+
+			pub fn tcita(&self) -> SidboTcita {
+				self.id.clone()
 			}
 		}
 	};
