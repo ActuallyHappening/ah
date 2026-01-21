@@ -89,7 +89,7 @@ impl Timetracker {
 }
 
 #[derive(clap::Args)]
-pub struct AddProject {
+pub struct CliAddProject {
 	/// Long name here
 	#[arg(long)]
 	pub billing_company: String,
@@ -101,9 +101,34 @@ pub struct AddProject {
 	pub short_name: String,
 }
 
+impl CliAddProject {
+	pub async fn resolve(cli: Self, timetracker: &Timetracker) -> Result<AddProject> {
+		let companies = timetracker.get_billing_companies().await?;
+		let bcompany = companies
+			.into_iter()
+			.find(|c| c.ckaji().proper_name == cli.proper_name);
+		let company2 = bcompany.ok_or(eyre!(
+			"No company with proper name {} found",
+			cli.proper_name
+		))?;
+		Ok(AddProject {
+			billing_company: company2.tcita(),
+			proper_name: cli.proper_name,
+			short_name: cli.short_name,
+		})
+	}
+}
+
+#[derive(Debug)]
+pub struct AddProject {
+	pub billing_company: SidboTcita,
+	pub proper_name: String,
+	pub short_name: String,
+}
+
 impl AddProject {
 	/// time stodi
-	pub fn tcita(&self) -> String {
+	pub fn derive_tcita(&self) -> String {
 		format!(
 			"TODO ah-timetracker project {} noi aka {}",
 			ah_lojban::quote(self.proper_name.as_str()),
@@ -114,21 +139,12 @@ impl AddProject {
 
 impl Timetracker {
 	pub async fn add_project(&self, company: AddProject) -> Result<ProjectSidbo> {
-		let companies = self.get_billing_companies().await?;
-		let bcompany = companies
-			.into_iter()
-			.find(|c| c.ckaji().proper_name == company.proper_name);
-		let company2 = bcompany.ok_or(eyre!(
-			"No company with proper name {} found",
-			company.proper_name
-		))?;
-
 		// TODO: check for duplicates
 
-		let sidbo = SidboBuilder::new(company.tcita()).add_ckaji(ProjectCkaji {
-			billing_company: company2.tcita(),
-			proper_name: company2.ckaji().proper_name.clone(),
-			short_name: company2.ckaji().short_name.clone(),
+		let sidbo = SidboBuilder::new(company.derive_tcita()).add_ckaji(ProjectCkaji {
+			billing_company: company.billing_company.clone(),
+			proper_name: company.proper_name.clone(),
+			short_name: company.short_name.clone(),
 		})?;
 		let sidbo = self.persistence.add(sidbo).await?;
 		ProjectSidbo::try_from(sidbo)

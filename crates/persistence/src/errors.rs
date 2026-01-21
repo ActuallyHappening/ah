@@ -18,7 +18,7 @@ pub enum Error {
 	},
 	#[error("Expected data wasn't found: {id:?}")]
 	SelectMissing { id: SidboTcita },
-	#[error("Failed to select multiple sidbo tcita with ckaji tcita {ckaji_tcita}: {err}")]
+	#[error("Failed to select multiple sidbo tcita with ckaji tcita `{ckaji_tcita}`: {err}")]
 	SelectCkaji {
 		ckaji_tcita: String,
 		err: surrealdb::Error,

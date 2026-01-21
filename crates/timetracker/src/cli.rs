@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 
-use crate::timetracker::AddBillingCompany;
+use crate::timetracker::{AddBillingCompany, CliAddProject};
 
 #[derive(Parser)]
 #[command(name = "tt")]
@@ -17,6 +17,8 @@ pub enum SubCommands {
 	ShortStatus,
 	/// Adds a new billing company
 	Add(AddBillingCompany),
+	/// Adds a new project
+	New(CliAddProject),
 	/// Use like `tt start - -` for repeat
 	Start {
 		#[arg(short = 'b')]

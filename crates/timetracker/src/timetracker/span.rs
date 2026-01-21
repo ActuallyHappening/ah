@@ -51,6 +51,12 @@ pub struct StartBuilder {
 	pub billing_company: SidboTcita,
 }
 
+#[derive(Debug)]
+pub struct StopBuilder {
+	pub project: SidboTcita,
+	pub billing_company: SidboTcita,
+}
+
 impl Timetracker {
 	#[instrument(skip_all)]
 	pub async fn start(&self, fasnu: StartBuilder) -> Result<SpanFasnu> {
@@ -65,6 +71,20 @@ impl Timetracker {
 			.add(sidbo)
 			.await
 			.wrap_err("Couldn't start")?;
+		SpanFasnu::try_from(sidbo)
+	}
+
+	#[instrument(skip_all)]
+	pub async fn stop(&self, fasnu: StopBuilder) -> Result<SpanFasnu> {
+		let sidbo = SidboBuilder::new(SpanFasnu::derive_name()).add_ckaji(FasnuCkaji::Stop(Stop {
+			project: fasnu.project,
+			billing_company: fasnu.billing_company,
+		}))?;
+		let sidbo = self
+			.persistence
+			.add(sidbo)
+			.await
+			.wrap_err("Couldn't stop")?;
 		SpanFasnu::try_from(sidbo)
 	}
 }
