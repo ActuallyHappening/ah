@@ -19,17 +19,12 @@ pub enum SubCommands {
 	Add(AddBillingCompany),
 	/// Adds a new project
 	New(CliAddProject),
-	/// Use like `tt start - -` for repeat
 	Start {
 		#[arg(short = 'b')]
-		billing_company_short: Option<String>,
+		billing_company_short: String,
 
-		#[arg(short = 'p', short = 't')]
-		project_tcita: Option<String>,
-
-		/// Will assume your sub-description is new
-		#[clap(short, long)]
-		new: bool,
+		#[arg(short = 'p')]
+		project_short: String,
 	},
 	Stop,
 	/// Retrieves the active sub_description.

@@ -33,22 +33,48 @@ impl Timetracker {
 			.await
 			.wrap_err("Couldn't get primary sidbo")
 	}
+}
 
-	pub async fn select_billing_company(&self, id: SidboTcita) -> Result<BillingCompanyCkaji> {
-		self
-			.persistence
-			.select_pasidbo(SidboTcita::from_tcita::<BillingCompanyCkaji>())
-			.await
-			.wrap_err("Couldn't get billing company")
+mod billing_companies {
+	use ah_persistence::sidbo::SidboTcita;
+
+	use crate::{
+		prelude::*, timetracker::Timetracker, timetracker_ckaji::BillingCompanyCkaji,
+		timetracker_sidbo::BillingCompanySidbo,
+	};
+
+	impl Timetracker {
+		pub async fn select_billing_company(&self, id: SidboTcita) -> Result<BillingCompanyCkaji> {
+			self
+				.persistence
+				.select_pasidbo(SidboTcita::from_tcita::<BillingCompanyCkaji>())
+				.await
+				.wrap_err("Couldn't get billing company")
+		}
+
+		pub async fn get_billing_companies(&self) -> Result<Vec<BillingCompanySidbo>> {
+			let ids = self
+				.persistence
+				.select_ckaji_sidbo::<BillingCompanyCkaji>()
+				.await?;
+			let companies = self.persistence.select_sidbo(ids).await?;
+			Ok(companies)
+		}
 	}
+}
 
-	pub async fn get_billing_companies(&self) -> Result<Vec<BillingCompanySidbo>> {
-		let ids = self
-			.persistence
-			.select_ckaji_sidbo::<BillingCompanyCkaji>()
-			.await?;
-		let companies = self.persistence.select_sidbo(ids).await?;
-		Ok(companies)
+mod projects {
+	use crate::{prelude::*, timetracker::Timetracker, timetracker_sidbo::ProjectSidbo};
+
+	impl Timetracker {
+		pub async fn get_projects(&self) -> Result<Vec<ProjectSidbo>> {
+			let ids = self
+				.persistence
+				.select_ckaji_sidbo::<ProjectSidbo>()
+				.await?;
+			let projects = self.persistence.select_sidbo(ids).await?;
+			Ok(projects)
+		}
 	}
 }
 
@@ -83,7 +109,7 @@ impl Timetracker {
 			proper_name: company.proper_name,
 			short_name: company.short_name,
 		})?;
-		let mut sidbo = self.persistence.add(sidbo).await?;
+		let sidbo = self.persistence.add(sidbo).await?;
 		BillingCompanySidbo::try_from(sidbo)
 	}
 }
@@ -106,7 +132,7 @@ impl CliAddProject {
 		let companies = timetracker.get_billing_companies().await?;
 		let bcompany = companies
 			.into_iter()
-			.find(|c| c.ckaji().proper_name == cli.proper_name);
+			.find(|c| c.ckaji().proper_name == cli.billing_company);
 		let company2 = bcompany.ok_or(eyre!(
 			"No company with proper name {} found",
 			cli.proper_name

@@ -40,6 +40,8 @@ pub struct Start {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Stop {
+	#[serde(with = "time::serde::iso8601")]
+	stop: time::OffsetDateTime,
 	project: SidboTcita,
 	billing_company: SidboTcita,
 }
@@ -53,6 +55,7 @@ pub struct StartBuilder {
 
 #[derive(Debug)]
 pub struct StopBuilder {
+	pub stop: time::UtcDateTime,
 	pub project: SidboTcita,
 	pub billing_company: SidboTcita,
 }
@@ -71,12 +74,15 @@ impl Timetracker {
 			.add(sidbo)
 			.await
 			.wrap_err("Couldn't start")?;
-		SpanFasnu::try_from(sidbo)
+		let ret = SpanFasnu::try_from(sidbo)?;
+		info!("Started a span");
+		Ok(ret)
 	}
 
 	#[instrument(skip_all)]
 	pub async fn stop(&self, fasnu: StopBuilder) -> Result<SpanFasnu> {
 		let sidbo = SidboBuilder::new(SpanFasnu::derive_name()).add_ckaji(FasnuCkaji::Stop(Stop {
+			stop: fasnu.stop.into(),
 			project: fasnu.project,
 			billing_company: fasnu.billing_company,
 		}))?;
@@ -85,6 +91,8 @@ impl Timetracker {
 			.add(sidbo)
 			.await
 			.wrap_err("Couldn't stop")?;
-		SpanFasnu::try_from(sidbo)
+		let ret = SpanFasnu::try_from(sidbo)?;
+		info!("Stopped a span");
+		Ok(ret)
 	}
 }

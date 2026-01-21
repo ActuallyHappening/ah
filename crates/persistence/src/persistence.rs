@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use ah_tcita::{Ka_tcita, veciksi};
-use serde::{Serialize, de::DeserializeOwned};
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use surrealdb::opt::IntoResource;
 
 use crate::{
@@ -134,11 +134,15 @@ impl PersistenceEngine {
 				ckaji_tcita: Ckaji::TCITA.to_owned(),
 				err,
 			})?;
-		let resp: Vec<SidboTcita> = resp.take(0).map_err(|err| Error::SelectCkaji {
+		#[derive(Deserialize)]
+		struct IntermediateId {
+			id: SidboTcita,
+		}
+		let resp: Vec<IntermediateId> = resp.take(0).map_err(|err| Error::SelectCkaji {
 			ckaji_tcita: Ckaji::TCITA.to_owned(),
 			err,
 		})?;
-		Ok(resp.into_iter().collect())
+		Ok(resp.into_iter().map(|i| i.id).collect())
 	}
 }
 
