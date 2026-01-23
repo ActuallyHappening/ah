@@ -11,6 +11,7 @@ use crate::{
 	},
 };
 
+#[derive(Debug, Clone)]
 pub struct WithSidboTcita<T> {
 	inner: T,
 	tcita: SidboTcita,
@@ -65,13 +66,13 @@ pub struct UnderstandSpanState {
 	full: Vec<SpanFasnuSidbo>,
 }
 
-#[derive(Default)]
+#[derive(Debug, Default, Clone)]
 pub struct ProjectResolved<T> {
 	inner: HashMap<SidboTcita, HashMap<SidboTcita, T>>,
 }
 pub type ProjectResolvedSpanState = ProjectResolved<SpansState>;
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct SpansState {
 	pub history: Vec<ClosedSpan>,
 	pub open: Option<OpenSpan>,
@@ -183,7 +184,7 @@ impl SpansState {
 	}
 }
 
-#[derive(Default)]
+#[derive(Default, Clone, Debug)]
 pub struct SpansByDay {
 	pub clean: HashMap<Date, Vec<ClosedSpan>>,
 	pub unclean: Vec<ClosedSpan>,
