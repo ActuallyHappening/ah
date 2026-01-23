@@ -82,7 +82,9 @@ dependencies = [
 name = "ah-sazycimde-iced"
 version = "0.1.0"
 dependencies = [
+ "ah-timetracker",
  "iced",
+ "time",
 ]
 
 [[package]]
