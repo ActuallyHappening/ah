@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use ah_persistence::sidbo::SidboTcita;
+use time::UtcOffset;
 
 use crate::{
 	prelude::*,
@@ -152,16 +153,72 @@ where
 				.map(move |(project, state)| (company, project, state))
 		})
 	}
+
+	pub fn into_iter(self) -> impl Iterator<Item = (SidboTcita, SidboTcita, T)> {
+		// ui la .clone.
+		self.inner.into_iter().flat_map(|(company, projects)| {
+			projects
+				.into_iter()
+				.map(move |(project, state)| (company.clone(), project, state))
+		})
+	}
 }
 
-// impl<T> FromIterator for ProjectResolved<T> {
-// 	fn from_iter<T: IntoIterator<Item = A>>(iter: T) -> Self {
-// 		todo!()
-// 	}
-// }
+impl<T> FromIterator<(SidboTcita, SidboTcita, T)> for ProjectResolved<T>
+where
+	T: Default,
+{
+	fn from_iter<I: IntoIterator<Item = (SidboTcita, SidboTcita, T)>>(iter: I) -> Self {
+		let mut resolved = ProjectResolved::<T>::default();
+		for (company, project, state) in iter {
+			*resolved.get_mut(&company, &project) = state;
+		}
+		resolved
+	}
+}
 
 impl SpansState {
 	pub fn open(&self) -> Option<WithSidboTcita<&Start>> {
 		self.open.as_ref().map(|open| open.as_ref())
+	}
+}
+
+#[derive(Default)]
+pub struct SpansByDay {
+	pub clean: HashMap<Date, Vec<ClosedSpan>>,
+	pub unclean: Vec<ClosedSpan>,
+	pub open: Option<OpenSpan>,
+}
+
+impl SpansState {
+	pub fn split_by_day(self, offset: UtcOffset) -> SpansByDay {
+		let mut clean: HashMap<Date, Vec<ClosedSpan>> = HashMap::with_capacity(self.history.len());
+		let mut unclean = Vec::with_capacity(0);
+
+		for span in self.history {
+			let (start, stop) = &span;
+			let start_date = start.inner().start().to_offset(offset).date();
+			let end_date = stop.inner().stop().to_offset(offset).date();
+			if start_date != end_date {
+				unclean.push(span);
+			} else {
+				clean.entry(start_date).or_default().push(span);
+			}
+		}
+
+		SpansByDay {
+			clean,
+			unclean,
+			open: self.open,
+		}
+	}
+}
+
+impl ProjectResolved<SpansState> {
+	pub fn split_by_day(self, offset: UtcOffset) -> ProjectResolved<SpansByDay> {
+		self
+			.into_iter()
+			.map(|(b, p, state)| (b, p, SpansState::split_by_day(state, offset)))
+			.collect()
 	}
 }

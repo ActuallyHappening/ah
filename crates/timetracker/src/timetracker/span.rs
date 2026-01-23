@@ -47,12 +47,24 @@ pub struct Start {
 	billing_company: SidboTcita,
 }
 
+impl Start {
+	pub fn start(&self) -> UtcDateTime {
+		self.start.into()
+	}
+}
+
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Stop {
 	#[serde(with = "time::serde::iso8601")]
 	stop: time::OffsetDateTime,
 	project: SidboTcita,
 	billing_company: SidboTcita,
+}
+
+impl Stop {
+	pub fn stop(&self) -> UtcDateTime {
+		self.stop.into()
+	}
 }
 
 #[derive(Debug)]

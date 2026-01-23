@@ -87,10 +87,6 @@ pub mod timetracker {
 		by_project: ProjectResolved<SpansByDay>
 	}
 
-	pub struct SpansByDay {
-		clean: HashMap<Date, SpansState>,
-		unclean: SpansState,
-	}
 	
 	impl State {
 		fn split_by_day(project_resolved: &ProjectResolvedSpanState) -> ProjectResolved<SpansByDay> {
