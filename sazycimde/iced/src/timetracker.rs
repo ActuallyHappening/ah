@@ -13,24 +13,29 @@ use time::{Date, UtcOffset};
 use crate::{prelude::*, toplevel::TopLevelMessage};
 
 #[derive(Default, Clone, Debug)]
-pub(crate) struct State {
+pub struct State {
 	by_project: Option<ProjectResolved<SpansByDay>>,
 }
 
 #[derive(Debug, Clone)]
-pub(crate) enum Message {
+pub enum Message {
 	Loaded(ProjectResolved<SpansByDay>),
 }
 
 impl State {
-	pub(crate) fn start() -> Task<TopLevelMessage> {
-		Task::done(Message::Loaded(Default::default()).into())
+	pub(crate) fn start() -> Task<Message> {
+		Task::done(Message::Loaded(Default::default()))
 	}
+
 	pub(crate) fn view(&self) -> Element<'static, TopLevelMessage> {
 		text!("{:?}", self.by_project).into()
 	}
 
-	pub(crate) fn update(&mut self, message: Message) {}
+	pub(crate) fn update(&mut self, message: Message) {
+		match message {
+			Message::Loaded(data) => self.by_project = Some(data),
+		}
+	}
 }
 
 pub async fn fetch_spans() -> color_eyre::Result<ProjectResolved<SpansByDay>> {

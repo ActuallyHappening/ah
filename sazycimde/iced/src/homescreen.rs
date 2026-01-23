@@ -1,17 +1,11 @@
 use iced::Length::Fill;
 
-use crate::prelude::*;
-use crate::toplevel::{ScreensState, TopLevelMessage};
+use crate::{prelude::*, toplevel::CurrentlyDisplaying};
 
-#[derive(Debug, Clone)]
-pub(crate) enum ChangeScreens {
-	Timetracker,
-}
-
-pub(crate) fn home() -> Element<'static, ChangeScreens> {
+pub(crate) fn home() -> Element<'static, CurrentlyDisplaying> {
 	button("Timetracker")
 		.width(Fill)
 		.height(Fill)
-		.on_press(ChangeScreens::Timetracker)
+		.on_press(CurrentlyDisplaying::Timetracker)
 		.into()
 }
