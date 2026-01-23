@@ -59,6 +59,23 @@ impl State {
 		}
 	}
 
+	fn load_data(&mut self, data: Result<Data, String>) {
+		if let Ok(data) = &data {
+			self.company_selector = Some(widget::combo_box::State::new(
+				data
+					.billing_companies
+					.iter()
+					.map(|c| IdSelector {
+						proper_name: c.ckaji().proper_name().to_owned(),
+						id: c.tcita(),
+					})
+					.collect(),
+			));
+		}
+
+		self.data = Some(data);
+	}
+
 	fn company_selector<'s>(
 		&'s self,
 		f: impl FnOnce(&'s widget::combo_box::State<IdSelector>) -> Element<'s, TopLevelMessage>,
@@ -123,7 +140,7 @@ impl State {
 
 	pub(crate) fn update(&mut self, message: Message) {
 		match message {
-			Message::Loaded(data) => self.data = Some(data),
+			Message::Loaded(data) => self.load_data(data),
 			Message::SelectCompany(company) => self.company = Some(company),
 		}
 	}
@@ -133,10 +150,13 @@ async fn fetch_data(offset: UtcOffset) -> color_eyre::Result<Data> {
 	info!("Fetching data");
 	let timetracker = Timetracker::new().await?;
 	let spans = timetracker.get_spans().await?.resolve()?;
+	info!("Fetched spans");
 	// uinai hard coded +10
 	let by_project = spans.split_by_day(offset);
 	let billing_companies = timetracker.get_billing_companies().await?;
+	info!("fetched billing companies");
 	let projects = timetracker.get_projects().await?;
+	info!("fetched projects");
 	Ok(Data {
 		by_project,
 		billing_companies,

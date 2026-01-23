@@ -105,19 +105,26 @@ impl PersistenceEngine {
 		TSidbo: TryFrom<crate::sidbo::Sidbo>,
 		<TSidbo as TryFrom<crate::sidbo::Sidbo>>::Error: std::fmt::Debug,
 	{
-		let mut map = HashSet::new();
-		for id in ids {
-			map.insert(self.select_pasidbo_untyped(id).await?);
-		}
-		let map = map.into_iter().map(|sidbo| {
-			let id = sidbo.get_id().clone();
-			TSidbo::try_from(sidbo).map_err(|err| Error::SidboConversionFailed {
-				id,
-				err_debug: format!("{:?}", err),
-			})
-		});
-		let map = map.collect::<Result<Vec<_>>>()?;
-		Ok(map)
+		let mut resp = self
+			.conn
+			.query("SELECT * FROM $ids")
+			.bind(("ids", ids.into_iter().collect::<Vec<_>>()))
+			.await
+			.map_err(|err| Error::SelectSidboMany { err })?;
+		let resp: Vec<Sidbo> = resp.take(0).map_err(|err| Error::SelectSidboMany { err })?;
+
+		Ok(
+			resp
+				.into_iter()
+				.map(|sidbo| {
+					let id = sidbo.get_id().clone();
+					TSidbo::try_from(sidbo).map_err(|err| Error::SidboConversionFailed {
+						id,
+						err_debug: format!("{:?}", err),
+					})
+				})
+				.collect::<Result<Vec<_>, _>>()?,
+		)
 	}
 
 	pub async fn select_ckaji_sidbo<Ckaji>(&self) -> Result<HashSet<SidboTcita>>

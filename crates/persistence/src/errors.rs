@@ -24,6 +24,8 @@ pub enum Error {
 		err: surrealdb::Error,
 	},
 
+	#[error("Failed to select multiple sidbo from the database")]
+	SelectSidboMany { err: surrealdb::Error },
 	#[error("Failed to convert Sidbo from {id:?}: {err_debug}")]
 	SidboConversionFailed { id: SidboTcita, err_debug: String },
 

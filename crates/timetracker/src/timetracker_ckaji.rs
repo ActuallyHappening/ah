@@ -17,6 +17,10 @@ impl BillingCompanyCkaji {
 	pub fn match_short_name(&self, short_name: &str) -> bool {
 		self.short_name == short_name
 	}
+
+	pub fn proper_name(&self) -> &str {
+		&self.proper_name
+	}
 }
 
 #[veciksi(
