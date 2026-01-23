@@ -7,7 +7,7 @@ use crate::prelude::*;
 	glico = "Billing Company abstraction"
 )]
 #[tcita("TODO ah-timetracker su'u billing company")]
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BillingCompanyCkaji {
 	pub(crate) proper_name: String,
 	pub(crate) short_name: String,
@@ -24,7 +24,7 @@ impl BillingCompanyCkaji {
 	glico = "Project abstraction"
 )]
 #[tcita("TODO ah-timetracker su'u project")]
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ProjectCkaji {
 	pub(crate) billing_company: SidboTcita,
 	pub(crate) proper_name: String,

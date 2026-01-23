@@ -22,7 +22,7 @@ impl SpanFasnuSidbo {
 }
 
 #[tcita("TODO ah-timetracker streaming fasnu ckaji")]
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Clone, Deserialize, Serialize, Debug)]
 pub enum FasnuCkaji {
 	#[serde(rename = "TODO ah-timetracker start")]
 	Start(Start),

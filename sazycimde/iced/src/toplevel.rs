@@ -8,7 +8,7 @@ pub mod state {
 
 	use crate::{prelude::*, toplevel::TopLevelMessage};
 
-	#[derive(Debug, Clone)]
+	#[derive(Debug)]
 	pub struct TopLevelState {
 		theme: Theme,
 		current: CurrentlyDisplaying,
@@ -51,7 +51,7 @@ pub mod state {
 		}
 	}
 
-	#[derive(Default, Debug, Clone)]
+	#[derive(Default, Debug)]
 	pub struct ScreensState {
 		pub home: (),
 		pub timetracker: timetracker::State,

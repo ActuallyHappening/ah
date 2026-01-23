@@ -62,7 +62,7 @@ impl Sidbo {
 #[macro_export]
 macro_rules! packaji_sidbo {
 	($vis:vis struct $ident:ident { ckaji: $ckaji:ty, ... }) => {
-		#[derive(Debug, Deserialize)]
+		#[derive(Clone, Debug, Deserialize)]
 		#[serde(try_from = "::ah_persistence::sidbo::Sidbo")]
 		$vis struct $ident {
 			ckaji: $ckaji,
