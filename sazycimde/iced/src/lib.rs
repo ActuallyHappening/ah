@@ -1,61 +1,6 @@
-pub mod prelude {
-	pub(crate) use iced::{Element, Theme, widget::button};
-
-	pub(crate) use crate::*;
-}
 pub mod app_tracing;
-pub mod toplevel {
-	use crate::prelude::*;
-
-	#[derive(Debug, Clone)]
-	pub struct TopLevelState {
-		theme: Theme,
-		screen: ScreensState,
-	}
-
-	impl Default for TopLevelState {
-		fn default() -> Self {
-			TopLevelState {
-				theme: Theme::TokyoNight,
-				screen: ScreensState::Home,
-			}
-		}
-	}
-
-	#[derive(Debug, Clone)]
-	pub(crate) enum ScreensState {
-		Home,
-		Timetracker(timetracker::State),
-	}
-
-	impl TopLevelState {
-		pub fn update(&mut self, message: TopLevelMessage) {
-			match message {
-				TopLevelMessage::ChangeScreen(change) => match change {
-					homescreen::ChangeScreens::Timetracker => {
-						self.screen = ScreensState::Timetracker(timetracker::State::default())
-					}
-				},
-			}
-		}
-
-		pub fn view(&self) -> Element<'_, TopLevelMessage> {
-			match &self.screen {
-				ScreensState::Home => homescreen::home().map(TopLevelMessage::ChangeScreen),
-				ScreensState::Timetracker(state) => timetracker::view(state),
-			}
-		}
-
-		pub fn theme(&self) -> Theme {
-			self.theme.clone()
-		}
-	}
-
-	#[derive(Debug, Clone)]
-	pub enum TopLevelMessage {
-		ChangeScreen(homescreen::ChangeScreens),
-	}
-}
+pub mod prelude;
+pub mod toplevel;
 
 pub mod homescreen {
 	use iced::Length::Fill;
@@ -84,19 +29,33 @@ pub mod timetracker {
 		Timetracker,
 		span::processing::{ProjectResolved, ProjectResolvedSpanState, SpansByDay, SpansState},
 	};
-	use iced::widget::Row;
+	use iced::{
+		Task,
+		widget::{Row, text},
+	};
 	use time::{Date, UtcOffset};
 
 	use crate::{prelude::*, toplevel::TopLevelMessage};
 
 	#[derive(Default, Clone, Debug)]
 	pub(crate) struct State {
-		by_project: ProjectResolved<SpansByDay>,
+		by_project: Option<ProjectResolved<SpansByDay>>,
 	}
 
-	pub(crate) fn view(state: &State) -> Element<'static, TopLevelMessage> {
-		let times = vec![1, 2, 3];
-		todo!()
+	#[derive(Debug, Clone)]
+	pub(crate) enum Message {
+		Loaded(ProjectResolved<SpansByDay>),
+	}
+
+	impl State {
+		pub(crate) fn start() -> Task<TopLevelMessage> {
+			Task::done(Message::Loaded(Default::default()).into())
+		}
+		pub(crate) fn view(&self) -> Element<'static, TopLevelMessage> {
+			text!("{:?}", self.by_project).into()
+		}
+
+		pub(crate) fn update(&mut self, message: Message) {}
 	}
 
 	pub async fn fetch_spans() -> color_eyre::Result<ProjectResolved<SpansByDay>> {

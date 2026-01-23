@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 ah-timetracker.workspace = true
 color-eyre = "0.6.5"
+derive_more = { version = "2.1.1", features = ["from"] }
 iced = "0.14.0"
 time = "0.3.45"
 tracing = "0.1.37"
