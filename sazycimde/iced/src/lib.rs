@@ -3,6 +3,7 @@ pub mod prelude {
 
 	pub(crate) use crate::*;
 }
+pub mod app_tracing;
 pub mod toplevel {
 	use crate::prelude::*;
 
@@ -79,11 +80,12 @@ pub mod homescreen {
 pub mod timetracker {
 	use std::collections::HashMap;
 
-	use ah_timetracker::timetracker::span::processing::{
-		ProjectResolved, ProjectResolvedSpanState, SpansByDay, SpansState,
+	use ah_timetracker::timetracker::{
+		Timetracker,
+		span::processing::{ProjectResolved, ProjectResolvedSpanState, SpansByDay, SpansState},
 	};
 	use iced::widget::Row;
-	use time::Date;
+	use time::{Date, UtcOffset};
 
 	use crate::{prelude::*, toplevel::TopLevelMessage};
 
@@ -96,6 +98,11 @@ pub mod timetracker {
 		let times = vec![1, 2, 3];
 		todo!()
 	}
-	
-	pub async fn fetch_
+
+	pub async fn fetch_spans() -> color_eyre::Result<ProjectResolved<SpansByDay>> {
+		let timetracker = Timetracker::new().await?;
+		let spans = timetracker.get_spans().await?.resolve()?;
+		// uinai hard coded +10
+		Ok(spans.split_by_day(UtcOffset::from_hms(10, 0, 0)?))
+	}
 }

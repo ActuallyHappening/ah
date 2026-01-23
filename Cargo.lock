@@ -83,8 +83,12 @@ name = "ah-sazycimde-iced"
 version = "0.1.0"
 dependencies = [
  "ah-timetracker",
+ "color-eyre",
  "iced",
  "time",
+ "tracing",
+ "tracing-error",
+ "tracing-subscriber",
 ]
 
 [[package]]
