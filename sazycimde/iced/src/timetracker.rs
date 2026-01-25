@@ -10,9 +10,9 @@ use ah_timetracker::{
 };
 use iced::{
 	Task,
-	widget::{Row, text},
+	widget::{Row, column, text},
 };
-use time::{Date, UtcDateTime, UtcOffset, ext::NumericalDuration};
+use time::{Date, Duration, UtcDateTime, UtcOffset, ext::NumericalDuration, format_description};
 
 use crate::{
 	prelude::*,
@@ -23,7 +23,7 @@ use crate::{
 pub struct State {
 	company_selector: Option<widget::combo_box::State<IdSelector>>,
 	company: Option<IdSelector>,
-	project_selector: widget::combo_box::State<IdSelector>,
+	project_selector: Option<widget::combo_box::State<IdSelector>>,
 	project: Option<IdSelector>,
 	data: Option<Result<Data, String>>,
 }
@@ -71,6 +71,17 @@ impl State {
 					})
 					.collect(),
 			));
+
+			self.project_selector = Some(widget::combo_box::State::new(
+				data
+					.projects
+					.iter()
+					.map(|c| IdSelector {
+						proper_name: c.ckaji().proper_name().to_owned(),
+						id: c.tcita(),
+					})
+					.collect(),
+			));
 		}
 
 		self.data = Some(data);
@@ -86,6 +97,17 @@ impl State {
 			.map(f)
 			.unwrap_or(text("Loading ...").into())
 	}
+
+	fn project_selector<'s>(
+		&'s self,
+		f: impl FnOnce(&'s widget::combo_box::State<IdSelector>) -> Element<'s, TopLevelMessage>,
+	) -> Element<'s, TopLevelMessage> {
+		self
+			.project_selector
+			.as_ref()
+			.map(f)
+			.unwrap_or(text("Loading ...").into())
+	}
 }
 
 #[allow(private_interfaces)]
@@ -93,6 +115,7 @@ impl State {
 pub enum Message {
 	Loaded(Result<Data, String>),
 	SelectCompany(IdSelector),
+	SelectProject(IdSelector),
 }
 
 impl State {
@@ -113,36 +136,75 @@ impl State {
 			)
 			.into()
 		});
-		let mut header = row![
+		let project_picker = self.project_selector(|state| {
+			widget::ComboBox::new(&state, "Select Project", self.company.as_ref(), |m| {
+				TopLevelMessage::Timetracker(Message::SelectProject(m))
+			})
+			.into()
+		});
+		let header = row![
 			button("<- Back").on_press(CurrentlyDisplaying::Home.into()),
 			text("Timetracker"),
-			company_picker
+			company_picker,
+			project_picker
 		];
+		let body = self.data(|data| {
+			let Some(company) = &self.company else {
+				return text("No company selected").into();
+			};
+			let Some(project) = &self.project else {
+				return text("No project selected").into();
+			};
+			let Some(data) = data.by_project.get(&company.id, &project.id) else {
+				return text("No data for company/project combo").into();
+			};
+			Self::body(data)
+		});
 
-		fn body(data: &SpansByDay) -> Element<'static, TopLevelMessage> {
-			let offset = UtcOffset::from_hms(10, 0, 0).expect("+10 UTC");
-
-			const DAYS: usize = 7;
-			let mut per_day = widget::Row::with_capacity(DAYS);
-			let today = UtcDateTime::now().to_offset(offset).date();
-			let past_week = (0..DAYS as i64).map(|day| today - day.days());
-
-			for date in past_week {
-				// let spans = data.get
-			}
-
-			per_day.into()
-		}
-
-		// let body = self.data(todo!());
-		widget::column![header].into()
+		widget::column![header, body].into()
 	}
 
 	pub(crate) fn update(&mut self, message: Message) {
 		match message {
 			Message::Loaded(data) => self.load_data(data),
 			Message::SelectCompany(company) => self.company = Some(company),
+			Message::SelectProject(project) => self.project = Some(project),
 		}
+	}
+
+	fn body(data: &SpansByDay) -> Element<'static, TopLevelMessage> {
+		let offset = UtcOffset::from_hms(10, 0, 0).expect("+10 UTC");
+
+		const DAYS: usize = 7;
+		let mut per_day = widget::Row::with_capacity(DAYS);
+		let today = UtcDateTime::now().to_offset(offset).date();
+		let past_week = (0..DAYS as i64).map(|day| today - day.days());
+
+		fn day(date: Date) -> String {
+			// english centric impl
+			date.weekday().to_string()
+		}
+
+		fn duration(duration: Duration) -> String {
+			let hours = duration.whole_hours();
+			let minutes = duration.whole_minutes() % 60;
+			let seconds = duration.whole_seconds() % 60;
+			format!("{}h {}m {}s", hours, minutes, seconds)
+		}
+
+		for date in past_week {
+			let mut col = widget::Column::new();
+			col = col.push(text!("{} {}", day(date), date.day()));
+			if let Some(clean) = data.clean.get(&date) {
+				for span in clean {
+					let durationxipa = span.1.inner().stop() - span.0.inner().start();
+					col = col.push(text!("{}", duration(durationxipa)));
+				}
+				per_day = per_day.push(col);
+			}
+		}
+
+		per_day.into()
 	}
 }
 

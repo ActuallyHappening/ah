@@ -40,7 +40,7 @@ impl ProjectCkaji {
 		self.short_name == short_name
 	}
 
-	pub fn display_name(&self) -> String {
+	pub fn proper_name(&self) -> String {
 		self.proper_name.clone()
 	}
 }

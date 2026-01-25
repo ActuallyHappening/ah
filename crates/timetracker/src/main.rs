@@ -93,7 +93,7 @@ async fn main() -> color_eyre::Result<()> {
 
 			for (_c, p, _s) in open {
 				let project = timetracker.get_project(p.clone()).await?;
-				output.push(format!("{}", project.ckaji().display_name()));
+				output.push(format!("{}", project.ckaji().proper_name()));
 			}
 
 			if output.is_empty() {
