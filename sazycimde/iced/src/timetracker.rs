@@ -178,7 +178,7 @@ impl State {
 		const DAYS: usize = 7;
 		let mut per_day = widget::Row::with_capacity(DAYS);
 		let today = UtcDateTime::now().to_offset(offset).date();
-		let past_week = (0..DAYS as i64).map(|day| today - day.days());
+		let past_week = (0..DAYS as i64).rev().map(|day| today - day.days());
 
 		fn day(date: Date) -> String {
 			// english centric impl
@@ -196,10 +196,13 @@ impl State {
 			let mut col = widget::Column::new();
 			col = col.push(text!("{} {}", day(date), date.day()));
 			if let Some(clean) = data.clean.get(&date) {
+				let mut total = Duration::ZERO;
 				for span in clean {
 					let durationxipa = span.1.inner().stop() - span.0.inner().start();
+					total += durationxipa;
 					col = col.push(text!("{}", duration(durationxipa)));
 				}
+				col = col.push(text!("Total: {}", duration(total)));
 				per_day = per_day.push(col);
 			}
 		}
