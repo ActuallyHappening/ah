@@ -137,7 +137,7 @@ impl State {
 			.into()
 		});
 		let project_picker = self.project_selector(|state| {
-			widget::ComboBox::new(&state, "Select Project", self.company.as_ref(), |m| {
+			widget::ComboBox::new(&state, "Select Project", self.project.as_ref(), |m| {
 				TopLevelMessage::Timetracker(Message::SelectProject(m))
 			})
 			.into()
@@ -192,20 +192,23 @@ impl State {
 			format!("{}h {}m {}s", hours, minutes, seconds)
 		}
 
+		let mut week_total = Duration::ZERO;
 		for date in past_week {
 			let mut col = widget::Column::new();
 			col = col.push(text!("{} {}", day(date), date.day()));
+			let mut day_total = Duration::ZERO;
 			if let Some(clean) = data.clean.get(&date) {
-				let mut total = Duration::ZERO;
 				for span in clean {
 					let durationxipa = span.1.inner().stop() - span.0.inner().start();
-					total += durationxipa;
+					day_total += durationxipa;
 					col = col.push(text!("{}", duration(durationxipa)));
 				}
-				col = col.push(text!("Total: {}", duration(total)));
-				per_day = per_day.push(col);
 			}
+			week_total += day_total;
+			col = col.push(text!("Total: {}", duration(day_total)));
+			per_day = per_day.push(col);
 		}
+		per_day = per_day.push(text!("Week total: {}", duration(week_total)));
 
 		per_day.into()
 	}
