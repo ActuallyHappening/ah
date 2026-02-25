@@ -112,11 +112,11 @@ impl UnderstandSpanState {
 impl SpansState {
 	fn start(&mut self, start: WithSidboTcita<Start>) -> Result<()> {
 		if self.open.is_some() {
-			bail!("Cannot start a project that is already being worked on");
+			bail!("Cannot start a project that is already being worked on: {:?} {:?}", self.open, start);
 		} else {
 			self.open = Some(start);
+			Ok(())
 		}
-		Ok(())
 	}
 
 	fn stop(&mut self, stop: WithSidboTcita<Stop>) -> Result<()> {
@@ -125,7 +125,7 @@ impl SpansState {
 			self.open = None;
 			Ok(())
 		} else {
-			bail!("Cannot stop a project that is not being worked on");
+			bail!("Cannot stop a project that is not being worked on: {:#?} {:?}", self.history, stop);
 		}
 	}
 }
