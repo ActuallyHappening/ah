@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use crate::prelude::*;
 
 /// [PartialEq] .e [Eq] use only the [Sidbo.id] for identity
-#[derive(Debug, Deserialize, Eq)]
+#[derive(SurrealValue, Debug, Deserialize, Eq)]
 pub struct Sidbo {
 	pub(crate) id: SidboTcita,
 	pub(crate) ckaji: HashMap<String, serde_json::Value>,
@@ -62,7 +62,7 @@ impl Sidbo {
 #[macro_export]
 macro_rules! packaji_sidbo {
 	($vis:vis struct $ident:ident { ckaji: $ckaji:ty, ... }) => {
-		#[derive(Clone, Debug, Deserialize)]
+		#[derive(Clone, Debug, Deserialize,)]
 		#[serde(try_from = "::ah_persistence::sidbo::Sidbo")]
 		$vis struct $ident {
 			ckaji: $ckaji,
@@ -102,8 +102,8 @@ pub use packaji_sidbo;
 
 /// Don't optimize for space. Optimize for simplicity.
 /// We could use just RecordIdKey here, but then deserialization is harder for no significant reason
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
-pub struct SidboTcita(pub(crate) surrealdb::RecordId);
+#[derive(SurrealValue, Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
+pub struct SidboTcita(pub(crate) surrealdb::types::RecordId);
 
 impl SidboTcita {
 	pub(crate) const TB: &str = "sidbo";
@@ -114,14 +114,14 @@ impl SidboTcita {
 	where
 		T: Ka_tcita,
 	{
-		SidboTcita(surrealdb::RecordId::from_table_key(Self::TB, T::TCITA))
+		SidboTcita(surrealdb::types::RecordId::new(Self::TB, T::TCITA))
 	}
 
 	pub fn from_name(name: &str) -> Self {
-		SidboTcita(surrealdb::RecordId::from_table_key(Self::TB, name))
+		SidboTcita(surrealdb::types::RecordId::new(Self::TB, name))
 	}
 
-	pub(crate) fn raw(&self) -> &surrealdb::RecordId {
+	pub(crate) fn raw(&self) -> &surrealdb::types::RecordId {
 		&self.0
 	}
 }
@@ -135,6 +135,6 @@ impl SidboTcita {
 
 impl std::fmt::Display for SidboTcita {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		write!(f, "{}", self.0)
+		write!(f, "{:?}", self.0)
 	}
 }

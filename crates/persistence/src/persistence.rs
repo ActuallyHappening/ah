@@ -50,10 +50,10 @@ impl PersistenceEngineBuilder {
 
 		conn
 			.signin(surrealdb::opt::auth::Database {
-				namespace: &self.ns,
-				database: &self.db,
-				username: &self.user,
-				password: &self.pass,
+				namespace: self.ns.to_owned(),
+				database: self.db.to_owned(),
+				username: self.user.to_owned(),
+				password: self.pass.to_owned(),
 			})
 			.await
 			.map_err(Error::Signin)?;
@@ -81,7 +81,7 @@ impl PersistenceEngine {
 
 	pub async fn select_pasidbo<Sidbo>(&self, id: SidboTcita) -> Result<Sidbo>
 	where
-		Sidbo: DeserializeOwned,
+		Sidbo: DeserializeOwned + SurrealValue,
 	{
 		Ok(
 			self
@@ -140,7 +140,7 @@ impl PersistenceEngine {
 				ckaji_tcita: Ckaji::TCITA.to_owned(),
 				err,
 			})?;
-		#[derive(Deserialize)]
+		#[derive(SurrealValue)]
 		struct IntermediateId {
 			id: SidboTcita,
 		}
@@ -181,7 +181,7 @@ impl SidboBuilder {
 	}
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, SurrealValue)]
 struct RawSidbo {
 	id: SidboTcita,
 	ckaji: HashMap<String, serde_json::Value>,
@@ -196,7 +196,7 @@ impl PersistenceEngine {
 		};
 		let ret: Option<Sidbo> = self
 			.conn
-			.insert((SidboTcita::TB, id.raw().key().clone()))
+			.insert((SidboTcita::TB, id.raw().key.clone()))
 			.content(full_insert)
 			.await
 			.map_err(|err| Error::Add {
