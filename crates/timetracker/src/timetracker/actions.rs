@@ -82,6 +82,7 @@ mod add_span {
 
 	#[derive(SurrealValue)]
 	pub struct AddSpan {
+		#[surreal(rename = "type")]
 		pub r#type: SpanType,
 		pub project: RecordId,
 	}

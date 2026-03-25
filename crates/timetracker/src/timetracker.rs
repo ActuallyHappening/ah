@@ -1,4 +1,4 @@
-use surrealdb::types::{RecordId, SurrealValue, Value};
+use surrealdb::types::{RecordId, SurrealValue};
 
 pub mod actions;
 pub mod processing;
@@ -46,6 +46,7 @@ impl std::fmt::Display for Project {
 
 #[derive(Debug, SurrealValue, Clone)]
 pub struct Span {
+	#[surreal(rename = "type")]
 	pub r#type: SpanType,
 	pub time: surrealdb::types::Datetime,
 	pub project: RecordId,
@@ -104,5 +105,9 @@ pub enum SpanType {
 fn span_type_surreal_values() {
 	let ty = SpanType::Start;
 	let val = ty.into_value();
-	assert_eq!(val, surrealdb::types::Value::String("START".into())) ;
+	assert_eq!(val, surrealdb::types::Value::String("START".into()));
+
+	let val = surrealdb::types::Value::String("STOP".into());
+	let ty = SpanType::from_value(val).unwrap();
+	assert_eq!(ty, SpanType::Stop);
 }
