@@ -1,180 +1,73 @@
-use ah_persistence::{
-	PersistenceEngine, PersistenceEngineBuilder, SidboBuilder, sidbo::SidboTcita,
-};
+use surrealdb::types::{RecordId, SurrealValue};
 
-pub mod span;
-
-use crate::{
-	prelude::*,
-	timetracker_ckaji::{BillingCompanyCkaji, ProjectCkaji},
-	timetracker_sidbo::{BillingCompanySidbo, ProjectSidbo},
-};
-
-pub struct Timetracker {
-	persistence: PersistenceEngine,
-}
-
-impl Timetracker {
-	pub async fn new() -> Result<Self> {
-		let persistence = PersistenceEngineBuilder::new()
-			.wrap_err("Failed to create persistence engine")?
-			.connect()
-			.await?;
-		Ok(Self { persistence })
-	}
-}
-
-mod billing_companies {
-	use ah_persistence::sidbo::SidboTcita;
-
-	use crate::{
-		prelude::*, timetracker::Timetracker, timetracker_ckaji::BillingCompanyCkaji,
-		timetracker_sidbo::BillingCompanySidbo,
-	};
-
-	impl Timetracker {
-		pub async fn select_billing_company(&self, id: SidboTcita) -> Result<BillingCompanyCkaji> {
-			self
-				.persistence
-				.select_pasidbo(id)
-				.await
-				.wrap_err("Couldn't get billing company")
-		}
-
-		pub async fn get_billing_companies(&self) -> Result<Vec<BillingCompanySidbo>> {
-			let ids = self
-				.persistence
-				.select_ckaji_sidbo::<BillingCompanyCkaji>()
-				.await?;
-			let companies = self.persistence.select_sidbo(ids).await?;
-			Ok(companies)
-		}
-	}
-}
-
-mod projects {
-	use ah_persistence::sidbo::SidboTcita;
-
-	use crate::{
-		prelude::*, timetracker::Timetracker, timetracker_ckaji::ProjectCkaji,
-		timetracker_sidbo::ProjectSidbo,
-	};
-
-	impl Timetracker {
-		pub async fn get_project(&self, id: SidboTcita) -> Result<ProjectSidbo> {
-			self
-				.persistence
-				.select_pasidbo(id)
-				.await
-				.wrap_err("Couldn't get project")
-		}
-
-		pub async fn get_projects(&self) -> Result<Vec<ProjectSidbo>> {
-			let ids = self
-				.persistence
-				.select_ckaji_sidbo::<ProjectCkaji>()
-				.await?;
-			let projects = self.persistence.select_sidbo(ids).await?;
-			Ok(projects)
-		}
-	}
-}
-
-#[derive(clap::Args)]
-pub struct AddBillingCompany {
-	/// You must spell this exactly, then subsequent references to it are from short
-	#[arg(long)]
+#[derive(SurrealValue)]
+pub struct BillableCompany {
 	pub proper_name: String,
-	#[arg(long)]
 	pub short_name: String,
+	pub created_at: surrealdb::types::Datetime,
 }
 
-impl AddBillingCompany {
-	/// time stodi
-	pub fn tcita(&self) -> String {
-		format!(
-			"TODO ah-timetracker billing company {} noi aka {}",
-			ah_lojban::quote(self.proper_name.as_str()),
-			ah_lojban::quote(self.short_name.as_str())
-		)
+impl BillableCompany {
+	pub fn created_at(&self) -> time::UtcDateTime {
+		self.created_at.into_inner().into()
 	}
 }
 
-impl Timetracker {
-	pub async fn add_billing_company(
-		&self,
-		company: AddBillingCompany,
-	) -> Result<BillingCompanySidbo> {
-		// TODO: check that no billing companies with identical proper_name or short_name's exist
-
-		let sidbo = SidboBuilder::new(company.tcita()).add_ckaji(BillingCompanyCkaji {
-			proper_name: company.proper_name,
-			short_name: company.short_name,
-		})?;
-		let sidbo = self.persistence.add(sidbo).await?;
-		BillingCompanySidbo::try_from(sidbo)
-	}
-}
-
-#[derive(clap::Args)]
-pub struct CliAddProject {
-	/// Long name here
-	#[arg(long)]
-	pub billing_company: String,
-
-	/// You must spell this exactly, then subsequent references to it are from short
-	#[arg(long)]
+#[derive(SurrealValue)]
+pub struct Project {
+	pub billing_company: RecordId,
 	pub proper_name: String,
-	#[arg(long)]
 	pub short_name: String,
+	pub created_at: surrealdb::types::Datetime,
 }
 
-impl CliAddProject {
-	pub async fn resolve(cli: Self, timetracker: &Timetracker) -> Result<AddProject> {
-		let companies = timetracker.get_billing_companies().await?;
-		let bcompany = companies
-			.into_iter()
-			.find(|c| c.ckaji().proper_name == cli.billing_company);
-		let company2 = bcompany.ok_or(eyre!(
-			"No company with proper name {} found",
-			cli.proper_name
-		))?;
-		Ok(AddProject {
-			billing_company: company2.tcita(),
-			proper_name: cli.proper_name,
-			short_name: cli.short_name,
+impl Project {
+	pub fn created_at(&self) -> time::UtcDateTime {
+		self.created_at().into_inner().into()
+	}
+}
+
+#[derive(SurrealValue)]
+pub struct Span {
+	pub r#type: SpanType,
+	pub time: surrealdb::types::Datetime,
+	pub project: RecordId,
+}
+
+impl Span {
+	pub fn time(&self) -> time::UtcDateTime {
+		self.time.into_inner().into()
+	}
+}
+
+pub enum SpanType {
+	Start,
+	Stop,
+}
+
+impl SurrealValue for SpanType {
+	fn kind_of() -> surrealdb::types::Kind {
+		surrealdb::types::Kind::String
+	}
+	fn into_value(self) -> surrealdb::types::Value {
+		match self {
+			Self::Start => "START".into(),
+			Self::Stop => "STOP".into(),
+		}
+	}
+	fn from_value(value: surrealdb::types::Value) -> Result<Self, surrealdb::Error>
+	where
+		Self: Sized,
+	{
+		let str: String = value.try_into()?;
+		Ok(match str.as_str() {
+			"START" => Self::Start,
+			"STOP" => Self::Stop,
+			str => {
+				return Err(surrealdb::Error::thrown(format!(
+					"Unknown SpanType encountered when deserializing: '{str:?}'"
+				)));
+			}
 		})
-	}
-}
-
-#[derive(Debug)]
-pub struct AddProject {
-	pub billing_company: SidboTcita,
-	pub proper_name: String,
-	pub short_name: String,
-}
-
-impl AddProject {
-	/// time stodi
-	pub fn derive_tcita(&self) -> String {
-		format!(
-			"TODO ah-timetracker project {} noi aka {}",
-			ah_lojban::quote(self.proper_name.as_str()),
-			ah_lojban::quote(self.short_name.as_str())
-		)
-	}
-}
-
-impl Timetracker {
-	pub async fn add_project(&self, company: AddProject) -> Result<ProjectSidbo> {
-		// TODO: check for duplicates
-
-		let sidbo = SidboBuilder::new(company.derive_tcita()).add_ckaji(ProjectCkaji {
-			billing_company: company.billing_company.clone(),
-			proper_name: company.proper_name.clone(),
-			short_name: company.short_name.clone(),
-		})?;
-		let sidbo = self.persistence.add(sidbo).await?;
-		ProjectSidbo::try_from(sidbo)
 	}
 }

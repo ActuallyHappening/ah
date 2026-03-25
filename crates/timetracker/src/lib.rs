@@ -3,7 +3,4 @@ pub mod cli;
 pub mod errors;
 pub mod prelude;
 pub mod timetracker;
-pub mod timetracker_ckaji;
-pub mod timetracker_sidbo;
-
-pub use ah_persistence::sidbo;
+pub mod db;
