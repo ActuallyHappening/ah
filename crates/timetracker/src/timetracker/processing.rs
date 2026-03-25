@@ -12,12 +12,13 @@ pub type OpenSpan = Span;
 
 impl Db {
 	pub fn day(&self, project: &RecordId, day: Date, offset: UtcOffset) -> Vec<Duration> {
-		let spans: Vec<&Span> = self
+		let mut spans: Vec<&Span> = self
 			.spans
 			.values()
 			.filter(|s| &s.project == project)
 			.filter(|s| s.time().to_offset(offset).date() == day)
 			.collect();
+		spans.sort_by(|a, b| a.time().cmp(&b.time()));
 		let mut past_durations = Vec::with_capacity(spans.len() / 2);
 		let mut open_start = None;
 
