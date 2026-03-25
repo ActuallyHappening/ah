@@ -1,8 +1,9 @@
 use surrealdb::types::{RecordId, SurrealValue, Value};
 
 pub mod actions;
+pub mod processing;
 
-#[derive(SurrealValue, Clone)]
+#[derive(Debug, SurrealValue, Clone)]
 pub struct BillableCompany {
 	pub proper_name: String,
 	pub short_name: String,
@@ -16,7 +17,7 @@ impl BillableCompany {
 	}
 }
 
-#[derive(SurrealValue, Clone)]
+#[derive(Debug, SurrealValue, Clone)]
 pub struct Project {
 	pub billing_company: RecordId,
 	pub proper_name: String,
@@ -31,7 +32,13 @@ impl Project {
 	}
 }
 
-#[derive(SurrealValue, Clone)]
+impl std::fmt::Display for Project {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "{}", self.proper_name)
+	}
+}
+
+#[derive(Debug, SurrealValue, Clone)]
 pub struct Span {
 	pub r#type: SpanType,
 	pub time: surrealdb::types::Datetime,
@@ -45,7 +52,7 @@ impl Span {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub enum SpanType {
 	Start,
 	Stop,

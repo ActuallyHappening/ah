@@ -4,3 +4,5 @@ pub mod errors;
 pub mod prelude;
 pub mod timetracker;
 pub mod db;
+
+pub use surrealdb::types::RecordId;

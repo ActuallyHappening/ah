@@ -61,3 +61,27 @@ mod add_project {
 		}
 	}
 }
+
+mod add_span {
+	use surrealdb::types::{RecordId, SurrealValue};
+
+	use crate::{db::Db, prelude::*, timetracker::{Span, SpanType}};
+
+	#[derive(SurrealValue)]
+	pub struct AddSpan {
+		r#type: SpanType,
+		project: RecordId,
+	}
+
+	impl Db {
+		pub async fn add_span(&mut self, span: AddSpan) -> Result<Span> {
+			let res: Vec<Span> = self.conn.insert("span").content(span).await?;
+			let res = res
+				.into_iter()
+				.next()
+				.ok_or(eyre!("Should have only returned one record"))?;
+			self.spans.insert(res.id.clone(), res.clone());
+			Ok(res)
+		}
+	}
+}

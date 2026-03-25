@@ -11,6 +11,7 @@ fn get_from_env(key: &str) -> Result<String> {
 	std::env::var(key).wrap_err("Couldn't find an expected ENV variable")
 }
 
+#[derive(Debug, Clone)]
 pub struct Db {
 	pub(crate) conn: Surreal<any::Any>,
 	pub billable_companies: HashMap<RecordId, BillableCompany>,
@@ -56,7 +57,11 @@ impl Db {
 }
 
 mod billable_companies {
-	use crate::{db::Db, prelude::*};
+	use std::collections::HashMap;
+
+	use surrealdb::types::RecordId;
+
+	use crate::{db::Db, prelude::*, timetracker::BillableCompany};
 
 	impl Db {
 		pub(in crate::db) async fn refresh_billable_companies(&mut self) -> Result<()> {
