@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 
-// use crate::timetracker::{AddBillingCompany, CliAddProject};
+use crate::timetracker::actions::{AddBillingCompany, CliAddProject};
 
 #[derive(Parser)]
 #[command(name = "tt")]
@@ -12,10 +12,10 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum SubCommands {
-	// /// Adds a new billing company
-	// Add(AddBillingCompany),
-	// /// Adds a new project
-	// New(CliAddProject),
+	/// Adds a new billing company
+	Add(AddBillingCompany),
+	/// Adds a new project
+	New(CliAddProject),
 	Start {
 		#[arg(short = 'b')]
 		billing_company_short: String,
@@ -27,4 +27,5 @@ pub enum SubCommands {
 	/// Retrieves the active project proper name.
 	/// Used in starship config.
 	Topic,
+	Dump,
 }

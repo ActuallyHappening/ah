@@ -1,9 +1,11 @@
-use std::collections::HashMap;
-
 use surrealdb::types::RecordId;
 use time::UtcOffset;
 
-use crate::{db::Db, prelude::*, timetracker::{Span, SpanType}};
+use crate::{
+	db::Db,
+	prelude::*,
+	timetracker::{Span, SpanType},
+};
 
 pub type ClosedSpan = Span;
 pub type OpenSpan = Span;
@@ -40,6 +42,25 @@ impl Db {
 		}
 
 		past_durations
+	}
+
+	pub fn open(&self) -> Vec<RecordId> {
+		let mut ret = Vec::with_capacity(self.projects.len());
+
+		let mut spans: Vec<&Span> = self.spans.values().collect();
+		// older -> newest
+		spans.sort_by(|a, b| a.time().cmp(&b.time()));
+		for project in self.projects.keys() {
+			let spans = spans.iter().filter(|s| &s.project == project);
+			if let Some(span) = spans.last() {
+				if span.r#type == SpanType::Start {
+					// latest span was a start
+					ret.push(project.clone());
+				}
+			}
+		}
+
+		ret
 	}
 }
 

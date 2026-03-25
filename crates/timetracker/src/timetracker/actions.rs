@@ -1,4 +1,4 @@
-use crate::prelude::*;
+// use crate::prelude::*;
 
 pub use add_billing_company::*;
 mod add_billing_company {
@@ -20,7 +20,7 @@ mod add_billing_company {
 			&mut self,
 			company: AddBillingCompany,
 		) -> Result<BillableCompany> {
-			let res: Vec<BillableCompany> = self.conn.insert("billing_company").content(company).await?;
+			let res: Vec<BillableCompany> = self.conn.insert("billable_company").content(company).await?;
 			let res = res
 				.into_iter()
 				.next()
@@ -31,12 +31,13 @@ mod add_billing_company {
 	}
 }
 
+pub use add_project::*;
 mod add_project {
-	use surrealdb::types::SurrealValue;
+	use surrealdb::types::{RecordId, SurrealValue};
 
 	use crate::{db::Db, prelude::*, timetracker::Project};
 
-	#[derive(clap::Args, SurrealValue)]
+	#[derive(clap::Args)]
 	pub struct CliAddProject {
 		/// Long name here
 		#[arg(long)]
@@ -49,8 +50,15 @@ mod add_project {
 		pub short_name: String,
 	}
 
+	#[derive(SurrealValue)]
+	pub struct AddProject {
+		pub billing_company: RecordId,
+		pub proper_name: String,
+		pub short_name: String,
+	}
+
 	impl Db {
-		pub async fn add_project(&mut self, project: CliAddProject) -> Result<Project> {
+		pub async fn add_project(&mut self, project: AddProject) -> Result<Project> {
 			let res: Vec<Project> = self.conn.insert("project").content(project).await?;
 			let res = res
 				.into_iter()
@@ -62,15 +70,20 @@ mod add_project {
 	}
 }
 
+pub use add_span::*;
 mod add_span {
 	use surrealdb::types::{RecordId, SurrealValue};
 
-	use crate::{db::Db, prelude::*, timetracker::{Span, SpanType}};
+	use crate::{
+		db::Db,
+		prelude::*,
+		timetracker::{Span, SpanType},
+	};
 
 	#[derive(SurrealValue)]
 	pub struct AddSpan {
-		r#type: SpanType,
-		project: RecordId,
+		pub r#type: SpanType,
+		pub project: RecordId,
 	}
 
 	impl Db {
